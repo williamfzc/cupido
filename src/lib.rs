@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt::Error;
 use std::fs::File;
 use std::io::Write;
 use git2::{Commit, Repository};
@@ -78,7 +79,7 @@ enum NodeType {
     Commit,
 }
 
-struct NodeData {
+pub struct NodeData {
     name: String,
     node_type: NodeType,
     node_index: NodeIndex,
@@ -123,12 +124,32 @@ impl CupidGraph {
         }
     }
 
+    pub fn get_file_node(&self, name: String) -> Option<&NodeData> {
+        self.file_mapping.get(&name)
+    }
+
+    pub fn get_commit_node(&self, name: String) -> Option<&NodeData> {
+        self.commit_mapping.get(&name)
+    }
+
     pub fn add_edge(&mut self, file_name: String, commit_name: String, edge_label: String) {
         if let (Some(file_data), Some(commit_data)) = (self.file_mapping.get(&file_name), self.commit_mapping.get(&commit_name)) {
             let file_index = file_data.node_index;
             let commit_index = commit_data.node_index;
             self.g.add_edge(file_index, commit_index, edge_label.to_string());
         }
+    }
+
+    pub fn related_commits(self, file_name: String) -> Result<Vec<String>, Error> {
+        if !self.file_mapping.contains_key(&file_name) {
+            return Err(Error::default());
+        }
+        let neighbors = self.g.neighbors(self.get_file_node(file_name).unwrap().node_index);
+        let related_commits: Vec<String> = neighbors
+            .map(|node_data| self.g[node_data].clone())
+            .collect();
+
+        Ok(related_commits)
     }
 
     pub fn export_dot(&self, file_path: &str) {
