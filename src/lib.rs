@@ -1,7 +1,8 @@
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
 use git2::{Commit, Repository};
-use petgraph::graph::UnGraph;
+use petgraph::graph::{NodeIndex, UnGraph};
 
 pub fn walk(conf: Config) -> CupidGraph {
     let repo_path = conf.repo_path;
@@ -13,17 +14,17 @@ pub fn walk(conf: Config) -> CupidGraph {
     let _ = revwalk.set_sorting(git2::Sort::TIME | git2::Sort::REVERSE);
 
     let mut counter = 0;
-    let mut graph = UnGraph::<String, i32>::new_undirected();
+    let mut graph = CupidGraph::new();
 
     for id in revwalk {
         if let Ok(commit_id) = id {
             if let Ok(commit) = repo.find_commit(commit_id) {
                 let commit_files = process_commit(&repo, &commit);
-                let commit_node = graph.add_node(commit_id.to_string());
 
+                graph.add_commit_node(commit_id.to_string());
                 for file in commit_files {
-                    let file_node = graph.add_node(file.clone());
-                    graph.add_edge(commit_node, file_node, 1);
+                    graph.add_file_node(file.clone());
+                    graph.add_edge(file, commit_id.to_string(), String::new());
                 }
 
                 counter += 1;
@@ -38,7 +39,7 @@ pub fn walk(conf: Config) -> CupidGraph {
         }
     }
 
-    return CupidGraph::new(graph);
+    return graph;
 }
 
 fn process_commit(repo: &Repository, commit: &Commit) -> Vec<String> {
@@ -72,15 +73,62 @@ impl Config {
     }
 }
 
+enum NodeType {
+    File,
+    Commit,
+}
+
+struct NodeData {
+    name: String,
+    node_type: NodeType,
+    node_index: NodeIndex,
+}
+
 pub struct CupidGraph {
-    g: UnGraph<String, i32>,
+    file_mapping: HashMap<String, NodeData>,
+    commit_mapping: HashMap<String, NodeData>,
+    g: UnGraph<String, String>,
 }
 
 impl CupidGraph {
-    pub fn new(graph: UnGraph<String, i32>) -> CupidGraph {
+    pub fn new() -> CupidGraph {
         return CupidGraph {
-            g: graph,
+            file_mapping: HashMap::<String, NodeData>::new(),
+            commit_mapping: HashMap::<String, NodeData>::new(),
+            g: UnGraph::<String, String>::new_undirected(),
         };
+    }
+
+    pub fn add_commit_node(&mut self, name: String) {
+        if !self.commit_mapping.contains_key(&name) {
+            let node_index = self.g.add_node(name.clone());
+            let node_data = NodeData {
+                name: name.clone(),
+                node_type: NodeType::Commit,
+                node_index,
+            };
+            self.commit_mapping.insert(name, node_data);
+        }
+    }
+
+    pub fn add_file_node(&mut self, name: String) {
+        if !self.file_mapping.contains_key(&name) {
+            let node_index = self.g.add_node(name.clone());
+            let node_data = NodeData {
+                name: name.clone(),
+                node_type: NodeType::File,
+                node_index,
+            };
+            self.file_mapping.insert(name, node_data);
+        }
+    }
+
+    pub fn add_edge(&mut self, file_name: String, commit_name: String, edge_label: String) {
+        if let (Some(file_data), Some(commit_data)) = (self.file_mapping.get(&file_name), self.commit_mapping.get(&commit_name)) {
+            let file_index = file_data.node_index;
+            let commit_index = commit_data.node_index;
+            self.g.add_edge(file_index, commit_index, edge_label.to_string());
+        }
     }
 
     pub fn export_dot(&self, file_path: &str) {
