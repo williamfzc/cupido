@@ -1,15 +1,22 @@
+pub mod server;
+
+use git2::{Commit, Repository};
+use petgraph::graph::{NodeIndex, UnGraph};
+use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fmt::Error;
 use std::fs::File;
 use std::io::Write;
-use git2::{Commit, Repository};
-use petgraph::graph::{NodeIndex, UnGraph};
 
 pub fn walk(conf: Config) -> CupidGraph {
     let repo_path = conf.repo_path;
 
     let repo = Repository::open(repo_path).expect("Failed to open repository");
-    let head = repo.head().expect("Failed to get HEAD ref").peel_to_commit().expect("Failed to peel HEAD to commit");
+    let head = repo
+        .head()
+        .expect("Failed to get HEAD ref")
+        .peel_to_commit()
+        .expect("Failed to peel HEAD to commit");
     let mut revwalk = repo.revwalk().expect("Failed to create revwalk");
     revwalk.push(head.id()).expect("Failed to push commit");
     let _ = revwalk.set_sorting(git2::Sort::TIME | git2::Sort::REVERSE);
@@ -49,10 +56,17 @@ fn process_commit(repo: &Repository, commit: &Commit) -> Vec<String> {
         let current_tree = commit.tree().expect("Failed to get commit tree");
 
         // Compare the trees and print changed files
-        let changes = repo.diff_tree_to_tree(Some(&parent_tree), Some(&current_tree), None).expect("Failed to get diff");
+        let changes = repo
+            .diff_tree_to_tree(Some(&parent_tree), Some(&current_tree), None)
+            .expect("Failed to get diff");
         let changed_files: Vec<String> = changes
             .deltas()
-            .filter_map(|delta| delta.new_file().path().map(|path| path.to_string_lossy().into_owned()))
+            .filter_map(|delta| {
+                delta
+                    .new_file()
+                    .path()
+                    .map(|path| path.to_string_lossy().into_owned())
+            })
             .collect();
 
         return changed_files;
@@ -133,10 +147,14 @@ impl CupidGraph {
     }
 
     pub fn add_edge(&mut self, file_name: String, commit_name: String, edge_label: String) {
-        if let (Some(file_data), Some(commit_data)) = (self.file_mapping.get(&file_name), self.commit_mapping.get(&commit_name)) {
+        if let (Some(file_data), Some(commit_data)) = (
+            self.file_mapping.get(&file_name),
+            self.commit_mapping.get(&commit_name),
+        ) {
             let file_index = file_data.node_index;
             let commit_index = commit_data.node_index;
-            self.g.add_edge(file_index, commit_index, edge_label.to_string());
+            self.g
+                .add_edge(file_index, commit_index, edge_label.to_string());
         }
     }
 
@@ -144,7 +162,9 @@ impl CupidGraph {
         if !self.file_mapping.contains_key(&file_name) {
             return Err(Error::default());
         }
-        let neighbors = self.g.neighbors(self.get_file_node(file_name).unwrap().node_index);
+        let neighbors = self
+            .g
+            .neighbors(self.get_file_node(file_name).unwrap().node_index);
         let related_commits: Vec<String> = neighbors
             .map(|node_data| self.g[node_data].clone())
             .collect();
@@ -155,10 +175,32 @@ impl CupidGraph {
     pub fn export_dot(&self, file_path: &str) {
         let dot = petgraph::dot::Dot::with_config(&self.g, &[]);
         if let Ok(mut file) = File::create(file_path) {
-            file.write_all(dot.to_string().as_bytes()).expect("Failed to write to file");
+            file.write_all(dot.to_string().as_bytes())
+                .expect("Failed to write to file");
             println!("DOT representation saved to 'graph.dot'");
         } else {
             eprintln!("Failed to create or write to 'graph.dot'");
         }
     }
+
+    pub fn file_size(&self) -> usize {
+        return self.file_mapping.len();
+    }
+
+    pub fn commit_size(&self) -> usize {
+        return self.commit_mapping.len();
+    }
+
+    pub fn size(&self) -> GraphSize {
+        return GraphSize {
+            file_size: self.file_size(),
+            commit_size: self.commit_size(),
+        };
+    }
+}
+
+#[derive(Deserialize, Serialize)]
+struct GraphSize {
+    file_size: usize,
+    commit_size: usize,
 }
