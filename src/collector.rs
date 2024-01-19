@@ -92,8 +92,8 @@ enum NodeType {
 }
 
 pub struct NodeData {
-    name: String,
-    node_type: NodeType,
+    _name: String,
+    _node_type: NodeType,
     node_index: NodeIndex,
 }
 
@@ -116,8 +116,8 @@ impl CupidGraph {
         if !self.commit_mapping.contains_key(&name) {
             let node_index = self.g.add_node(name.clone());
             let node_data = NodeData {
-                name: name.clone(),
-                node_type: NodeType::Commit,
+                _name: name.clone(),
+                _node_type: NodeType::Commit,
                 node_index,
             };
             self.commit_mapping.insert(name, node_data);
@@ -128,8 +128,8 @@ impl CupidGraph {
         if !self.file_mapping.contains_key(&name) {
             let node_index = self.g.add_node(name.clone());
             let node_data = NodeData {
-                name: name.clone(),
-                node_type: NodeType::File,
+                _name: name.clone(),
+                _node_type: NodeType::File,
                 node_index,
             };
             self.file_mapping.insert(name, node_data);
