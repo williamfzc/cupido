@@ -1,5 +1,5 @@
+use cupid::collector::{Config, walk};
 use cupid::server::{server_main, ServerConfig};
-use cupid::{walk, Config};
 
 fn main() {
     let conf = Config::new(".", 10240);
