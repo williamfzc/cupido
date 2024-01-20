@@ -1,12 +1,12 @@
-use tracing::info;
-use cupid::collector::{Config, walk};
+use cupid::collector::{walk, Config};
 use cupid::server::{server_main, ServerConfig};
+use tracing::info;
 
 fn main() {
     tracing_subscriber::fmt::init();
 
     info!("graph creating ...");
-    let conf = Config::new(".", 10240);
+    let conf = Config::default();
     let graph = walk(conf);
     info!("graph ready: {:?}", graph.size());
 

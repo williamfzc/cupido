@@ -1,6 +1,6 @@
-use git2::{Commit, Repository};
 use crate::graph::CupidGraph;
-
+use git2::{Commit, Repository};
+use regex::Regex;
 
 pub fn walk(conf: Config) -> CupidGraph {
     let repo_path = conf.repo_path;
@@ -18,15 +18,29 @@ pub fn walk(conf: Config) -> CupidGraph {
     let mut counter = 0;
     let mut graph = CupidGraph::new();
 
+    let issue_regex: Regex = Regex::new(&*conf.issue_regex).unwrap();
+
     for id in revwalk {
         if let Ok(commit_id) = id {
             if let Ok(commit) = repo.find_commit(commit_id) {
-                let commit_files = process_commit(&repo, &commit);
+                let commit_result = process_commit(&repo, &commit, &issue_regex);
 
-                graph.add_commit_node(commit_id.to_string());
-                for file in commit_files {
-                    graph.add_file_node(file.clone());
-                    graph.add_edge(file, commit_id.to_string(), String::new());
+                // files
+                for file in &commit_result.files {
+                    graph.add_file_node(file);
+                }
+                // commits
+                graph.add_commit_node(&commit_id.to_string());
+                for file in &commit_result.files {
+                    graph.add_edge(file, &commit_id.to_string(), &String::new());
+                }
+                // issues
+                for issue in &commit_result.issues {
+                    graph.add_issue_node(issue);
+
+                    for file in &commit_result.files {
+                        graph.add_edge(file, issue, &String::new());
+                    }
                 }
 
                 counter += 1;
@@ -44,7 +58,7 @@ pub fn walk(conf: Config) -> CupidGraph {
     return graph;
 }
 
-fn process_commit(repo: &Repository, commit: &Commit) -> Vec<String> {
+fn process_commit(repo: &Repository, commit: &Commit, re: &Regex) -> CommitResult {
     if let Some(parent) = commit.parent(0).ok() {
         let parent_tree = parent.tree().expect("Failed to get parent tree");
         let current_tree = commit.tree().expect("Failed to get commit tree");
@@ -63,21 +77,46 @@ fn process_commit(repo: &Repository, commit: &Commit) -> Vec<String> {
             })
             .collect();
 
-        return changed_files;
+        // Issue extract
+        let issues = re
+            .find_iter(commit.message().unwrap_or_default())
+            .map(|mat| mat.as_str().to_string())
+            .collect();
+
+        return CommitResult {
+            files: changed_files,
+            issues,
+        };
     }
-    return Vec::new();
+    return CommitResult::default();
+}
+
+struct CommitResult {
+    files: Vec<String>,
+    issues: Vec<String>,
+}
+
+impl CommitResult {
+    pub fn default() -> CommitResult {
+        return CommitResult {
+            files: Vec::new(),
+            issues: Vec::new(),
+        };
+    }
 }
 
 pub struct Config {
-    repo_path: String,
-    depth: i32,
+    pub repo_path: String,
+    pub depth: i32,
+    pub issue_regex: String,
 }
 
 impl Config {
-    pub fn new(repo_path: &str, depth: i32) -> Config {
-        Config {
-            repo_path: repo_path.to_string(),
-            depth,
-        }
+    pub fn default() -> Config {
+        return Config {
+            repo_path: String::from("."),
+            depth: 10240,
+            issue_regex: String::from(r"(#\d+)"),
+        };
     }
 }
