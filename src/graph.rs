@@ -59,14 +59,15 @@ impl CupidGraph {
     }
 
     pub fn add_issue_node(&mut self, name: &String) {
-        self.issue_mapping.entry(name.clone()).or_insert_with(|| {
+        if !self.issue_mapping.contains_key(name) {
             let node_index = self.g.add_node(name.clone());
-            NodeData {
+            let node_data = NodeData {
                 _name: name.clone(),
                 _node_type: NodeType::Issue,
                 node_index,
-            }
-        });
+            };
+            self.issue_mapping.insert(name.to_string(), node_data);
+        }
     }
 
     pub fn get_file_node(&self, name: &String) -> Option<&NodeData> {
@@ -77,13 +78,25 @@ impl CupidGraph {
         self.commit_mapping.get(name)
     }
 
-    pub fn add_edge(&mut self, file_name: &String, commit_name: &String, edge_label: &String) {
+    pub fn add_edge_file2commit(&mut self, file_name: &String, commit_name: &String, edge_label: &String) {
         if let (Some(file_data), Some(commit_data)) = (
             self.file_mapping.get(file_name),
             self.commit_mapping.get(commit_name),
         ) {
             let file_index = file_data.node_index;
             let commit_index = commit_data.node_index;
+            self.g
+                .add_edge(file_index, commit_index, edge_label.to_string());
+        }
+    }
+
+    pub fn add_edge_file2issue(&mut self, file_name: &String, issue: &String, edge_label: &String) {
+        if let (Some(file_data), Some(issue_data)) = (
+            self.file_mapping.get(file_name),
+            self.issue_mapping.get(issue),
+        ) {
+            let file_index = file_data.node_index;
+            let commit_index = issue_data.node_index;
             self.g
                 .add_edge(file_index, commit_index, edge_label.to_string());
         }
@@ -97,10 +110,42 @@ impl CupidGraph {
             .g
             .neighbors(self.get_file_node(file_name).unwrap().node_index);
         let related_commits: Vec<String> = neighbors
-            .map(|node_data| self.g[node_data].clone())
+            .filter(|node_index| {
+                let data = self.g[*node_index].to_string();
+                if !self.commit_mapping.contains_key(&data) {
+                    return false;
+                }
+                return true;
+            })
+            .map(|node_index| {
+                self.g[node_index].clone()
+            })
             .collect();
 
         Ok(related_commits)
+    }
+
+    pub fn related_issues(&self, file_name: &String) -> Result<Vec<String>, Error> {
+        if !self.file_mapping.contains_key(file_name) {
+            return Err(Error::default());
+        }
+        let neighbors = self
+            .g
+            .neighbors(self.get_file_node(file_name).unwrap().node_index);
+        let related_issues: Vec<String> = neighbors
+            .filter(|node_index| {
+                let data = self.g[*node_index].to_string();
+                if !self.issue_mapping.contains_key(&data) {
+                    return false;
+                }
+                return true;
+            })
+            .map(|node_index| {
+                self.g[node_index].clone()
+            })
+            .collect();
+
+        Ok(related_issues)
     }
 
     pub fn export_dot(&self, file_path: &str) {

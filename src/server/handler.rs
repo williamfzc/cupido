@@ -7,9 +7,13 @@ use tracing::error;
 
 pub fn create_router() -> Router {
     return Router::new()
+        .nest("/file",
+              Router::new()
+                  .route("/related/commits", get(file_related_commit_handler))
+                  .route("/related/issues", get(file_related_issue_handler)),
+        )
         .route("/size", get(size_handler))
-        .route("/", get(root_handler))
-        .route("/file/related/commit", get(file_related_commit_handler));
+        .route("/", get(root_handler));
 }
 
 async fn size_handler() -> axum::Json<GraphSize> {
@@ -33,6 +37,18 @@ async fn file_related_commit_handler(Query(params): Query<Params>) -> axum::Json
         }
     };
 }
+
+async fn file_related_issue_handler(Query(params): Query<Params>) -> axum::Json<Vec<String>> {
+    let conf = crate::server::app::SERVER_CONFIG.read().unwrap();
+    return match conf.graph.related_issues(&params.file) {
+        Ok(issues) => axum::Json(issues),
+        Err(error) => {
+            error!("file_related_issues error: {}", error);
+            axum::Json(Vec::new())
+        }
+    };
+}
+
 
 #[derive(Debug, Deserialize)]
 struct Params {

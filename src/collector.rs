@@ -32,14 +32,14 @@ pub fn walk(conf: Config) -> CupidGraph {
                 // commits
                 graph.add_commit_node(&commit_id.to_string());
                 for file in &commit_result.files {
-                    graph.add_edge(file, &commit_id.to_string(), &String::new());
+                    graph.add_edge_file2commit(file, &commit_id.to_string(), &String::new());
                 }
                 // issues
                 for issue in &commit_result.issues {
                     graph.add_issue_node(issue);
 
                     for file in &commit_result.files {
-                        graph.add_edge(file, issue, &String::new());
+                        graph.add_edge_file2issue(file, issue, &String::new());
                     }
                 }
 
