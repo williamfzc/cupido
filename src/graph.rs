@@ -89,7 +89,7 @@ impl CupidGraph {
         }
     }
 
-    pub fn related_commits(self, file_name: &String) -> Result<Vec<String>, Error> {
+    pub fn related_commits(&self, file_name: &String) -> Result<Vec<String>, Error> {
         if !self.file_mapping.contains_key(file_name) {
             return Err(Error::default());
         }
