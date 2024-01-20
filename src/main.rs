@@ -1,6 +1,7 @@
 use clap::Command;
 use cupid::collector::{walk, Config};
-use cupid::server::{server_main, ServerConfig};
+use cupid::server::app::server_main;
+use cupid::server::config::ServerConfig;
 use tracing::info;
 
 fn main() {
