@@ -8,6 +8,7 @@ fn main() {
     info!("graph creating ...");
     let conf = Config::new(".", 10240);
     let graph = walk(conf);
+    info!("graph ready: {:?}", graph.size());
 
     let server_conf = ServerConfig::new(graph);
     info!("server up");

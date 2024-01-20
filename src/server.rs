@@ -1,7 +1,7 @@
 use axum::routing::get;
 use axum::Router;
 use std::sync::{Arc, RwLock};
-use crate::collector::{CupidGraph, GraphSize};
+use crate::graph::{CupidGraph, GraphSize};
 
 pub struct ServerConfig {
     port: u16,
