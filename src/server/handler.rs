@@ -9,8 +9,8 @@ pub fn create_router() -> Router {
     return Router::new()
         .nest("/file",
               Router::new()
-                  .route("/related/commits", get(file_related_commit_handler))
-                  .route("/related/issues", get(file_related_issue_handler)),
+                  .route("/-/commits", get(file_related_commit_handler))
+                  .route("/-/issues", get(file_related_issue_handler)),
         )
         .route("/size", get(size_handler))
         .route("/", get(root_handler));
