@@ -2,6 +2,8 @@
 name = "cupid"
 version = "0.1.0"
 edition = "2021"
+description = "Networking your files in seconds."
+license-file = "./LICENSE"
 
 [dependencies]
 git2 = "0.18.1"
