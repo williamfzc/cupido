@@ -1,8 +1,8 @@
-use crate::graph::CupidGraph;
+use crate::graph::RelationGraph;
 use git2::{Commit, Repository};
 use regex::Regex;
 
-pub fn walk(conf: Config) -> CupidGraph {
+pub fn walk(conf: Config) -> RelationGraph {
     let repo_path = conf.repo_path;
 
     let repo = Repository::open(repo_path).expect("Failed to open repository");
@@ -16,7 +16,7 @@ pub fn walk(conf: Config) -> CupidGraph {
     let _ = revwalk.set_sorting(git2::Sort::TIME | git2::Sort::REVERSE);
 
     let mut counter = 0;
-    let mut graph = CupidGraph::new();
+    let mut graph = RelationGraph::new();
 
     let issue_regex: Regex = Regex::new(&*conf.issue_regex).unwrap();
 

@@ -17,16 +17,16 @@ pub struct NodeData {
     node_index: NodeIndex,
 }
 
-pub struct CupidGraph {
+pub struct RelationGraph {
     file_mapping: HashMap<String, NodeData>,
     commit_mapping: HashMap<String, NodeData>,
     issue_mapping: HashMap<String, NodeData>,
     g: UnGraph<String, String>,
 }
 
-impl CupidGraph {
-    pub fn new() -> CupidGraph {
-        return CupidGraph {
+impl RelationGraph {
+    pub fn new() -> RelationGraph {
+        return RelationGraph {
             file_mapping: HashMap::<String, NodeData>::new(),
             commit_mapping: HashMap::<String, NodeData>::new(),
             issue_mapping: HashMap::<String, NodeData>::new(),

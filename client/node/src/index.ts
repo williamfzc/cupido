@@ -5,7 +5,7 @@ enum Endpoints {
     SIZE = "/size"
 }
 
-export class CupidClient {
+export class CupidoClient {
     private apiBaseUrl: string;
 
     constructor(apiBaseUrl: string = 'http://127.0.0.1:9410') {

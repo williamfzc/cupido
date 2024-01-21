@@ -1,15 +1,15 @@
-use crate::graph::CupidGraph;
+use crate::graph::RelationGraph;
 
 pub struct ServerConfig {
     pub port: u16,
-    pub graph: CupidGraph,
+    pub graph: RelationGraph,
 }
 
 impl ServerConfig {
-    pub fn new(cupid_graph: CupidGraph) -> ServerConfig {
+    pub fn new(cupido_graph: RelationGraph) -> ServerConfig {
         return ServerConfig {
             port: 9410,
-            graph: cupid_graph,
+            graph: cupido_graph,
         };
     }
 }

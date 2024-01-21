@@ -1,14 +1,14 @@
 use clap::Command;
-use cupid::collector::{walk, Config};
-use cupid::server::app::server_main;
-use cupid::server::config::ServerConfig;
+use cupido::collector::{walk, Config};
+use cupido::server::app::server_main;
+use cupido::server::config::ServerConfig;
 use tracing::info;
 
 fn main() {
-    let cmd = Command::new("cupid")
-        .bin_name("cupid")
+    let cmd = Command::new("cupido")
+        .bin_name("cupido")
         .subcommand_required(true)
-        .subcommand(Command::new("up").about("cupid server up"));
+        .subcommand(Command::new("up").about("cupido server up"));
     let matches = cmd.get_matches();
     match matches.subcommand() {
         Some(("up", _matches)) => handle_up(),

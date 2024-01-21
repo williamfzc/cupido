@@ -1,10 +1,10 @@
-use crate::graph::CupidGraph;
+use crate::graph::RelationGraph;
 use crate::server::config::ServerConfig;
 use crate::server::handler::{create_router};
 use std::sync::{Arc, RwLock};
 
 lazy_static::lazy_static! {
-    pub static ref SERVER_CONFIG: Arc<RwLock<ServerConfig>> = Arc::new(RwLock::new(ServerConfig::new(CupidGraph::new())));
+    pub static ref SERVER_CONFIG: Arc<RwLock<ServerConfig>> = Arc::new(RwLock::new(ServerConfig::new(RelationGraph::new())));
 }
 
 pub(crate) const VERSION: &str = env!("CARGO_PKG_VERSION");
