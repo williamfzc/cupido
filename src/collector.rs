@@ -13,7 +13,9 @@ pub fn walk(conf: Config) -> RelationGraph {
         .expect("Failed to peel HEAD to commit");
     let mut revwalk = repo.revwalk().expect("Failed to create revwalk");
     revwalk.push(head.id()).expect("Failed to push commit");
-    let _ = revwalk.set_sorting(git2::Sort::TIME | git2::Sort::REVERSE);
+
+    // top to bottom
+    let _ = revwalk.set_sorting(git2::Sort::TIME);
 
     let mut counter = 0;
     let mut graph = RelationGraph::new();
