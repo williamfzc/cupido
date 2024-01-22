@@ -78,7 +78,12 @@ impl RelationGraph {
         self.commit_mapping.get(name)
     }
 
-    pub fn add_edge_file2commit(&mut self, file_name: &String, commit_name: &String, edge_label: &String) {
+    pub fn add_edge_file2commit(
+        &mut self,
+        file_name: &String,
+        commit_name: &String,
+        edge_label: &String,
+    ) {
         if let (Some(file_data), Some(commit_data)) = (
             self.file_mapping.get(file_name),
             self.commit_mapping.get(commit_name),
@@ -117,9 +122,7 @@ impl RelationGraph {
                 }
                 return true;
             })
-            .map(|node_index| {
-                self.g[node_index].clone()
-            })
+            .map(|node_index| self.g[node_index].clone())
             .collect();
 
         Ok(related_commits)
@@ -140,9 +143,7 @@ impl RelationGraph {
                 }
                 return true;
             })
-            .map(|node_index| {
-                self.g[node_index].clone()
-            })
+            .map(|node_index| self.g[node_index].clone())
             .collect();
 
         Ok(related_issues)
