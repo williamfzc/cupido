@@ -3,14 +3,19 @@ use git2::{Commit, Repository};
 use regex::Regex;
 
 pub fn walk(conf: Config) -> RelationGraph {
-    let repo_path = conf.repo_path;
+    let repo_path = &conf.repo_path;
 
     let repo = Repository::open(repo_path).expect("Failed to open repository");
+    return walk_dfs(&conf, &repo);
+}
+
+fn walk_dfs(conf: &Config, repo: &Repository) -> RelationGraph {
     let head = repo
         .head()
         .expect("Failed to get HEAD ref")
         .peel_to_commit()
         .expect("Failed to peel HEAD to commit");
+
     let mut revwalk = repo.revwalk().expect("Failed to create revwalk");
     revwalk.push(head.id()).expect("Failed to push commit");
 

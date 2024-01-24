@@ -3,6 +3,8 @@ use cupido::collector;
 use cupido::collector::Config;
 use std::time::Duration;
 
+const TEST_DIR: &str = ".";
+
 fn criterion_benchmark(c: &mut Criterion) {
     tracing_subscriber::fmt::init();
 
@@ -13,7 +15,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     group.bench_function("repo_walking_default_config", |b| {
         b.iter(|| {
             let mut config = Config::default();
-            config.repo_path = String::from(".");
+            config.repo_path = String::from(TEST_DIR);
             collector::walk(config);
         })
     });
