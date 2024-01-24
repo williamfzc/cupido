@@ -32,9 +32,10 @@ pub fn walk(conf: Config) -> RelationGraph {
                     graph.add_file_node(file);
                 }
                 // commits
-                graph.add_commit_node(&commit_id.to_string());
+                let commit_id_str = &commit_id.to_string();
+                graph.add_commit_node(commit_id_str);
                 for file in &commit_result.files {
-                    graph.add_edge_file2commit(file, &commit_id.to_string(), &String::new());
+                    graph.add_edge_file2commit(file, commit_id_str, &String::new());
                 }
                 // issues
                 for issue in &commit_result.issues {

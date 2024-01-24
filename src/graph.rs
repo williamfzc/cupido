@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::fmt::Error;
 use std::fs::File;
 use std::io::Write;
+use std::sync::Arc;
 
 enum NodeType {
     File,
@@ -12,61 +13,64 @@ enum NodeType {
 }
 
 pub struct NodeData {
-    _name: String,
+    _name: Arc<String>,
     _node_type: NodeType,
     node_index: NodeIndex,
 }
 
 pub struct RelationGraph {
-    file_mapping: HashMap<String, NodeData>,
-    commit_mapping: HashMap<String, NodeData>,
-    issue_mapping: HashMap<String, NodeData>,
-    g: UnGraph<String, String>,
+    file_mapping: HashMap<Arc<String>, NodeData>,
+    commit_mapping: HashMap<Arc<String>, NodeData>,
+    issue_mapping: HashMap<Arc<String>, NodeData>,
+    g: UnGraph<Arc<String>, String>,
 }
 
 impl RelationGraph {
     pub fn new() -> RelationGraph {
         return RelationGraph {
-            file_mapping: HashMap::<String, NodeData>::new(),
-            commit_mapping: HashMap::<String, NodeData>::new(),
-            issue_mapping: HashMap::<String, NodeData>::new(),
-            g: UnGraph::<String, String>::new_undirected(),
+            file_mapping: HashMap::<Arc<String>, NodeData>::new(),
+            commit_mapping: HashMap::<Arc<String>, NodeData>::new(),
+            issue_mapping: HashMap::<Arc<String>, NodeData>::new(),
+            g: UnGraph::<Arc<String>, String>::new_undirected(),
         };
     }
 
     pub fn add_commit_node(&mut self, name: &String) {
         if !self.commit_mapping.contains_key(name) {
-            let node_index = self.g.add_node(name.clone());
+            let name_rc: Arc<String> = Arc::from(name.to_string());
+            let node_index = self.g.add_node(name_rc.clone());
             let node_data = NodeData {
-                _name: name.clone(),
+                _name: name_rc.clone(),
                 _node_type: NodeType::Commit,
                 node_index,
             };
-            self.commit_mapping.insert(name.to_string(), node_data);
+            self.commit_mapping.insert(name_rc, node_data);
         }
     }
 
     pub fn add_file_node(&mut self, name: &String) {
         if !self.file_mapping.contains_key(name) {
-            let node_index = self.g.add_node(name.clone());
+            let name_rc: Arc<String> = Arc::from(name.to_string());
+            let node_index = self.g.add_node(name_rc.clone());
             let node_data = NodeData {
-                _name: name.clone(),
+                _name: name_rc.clone(),
                 _node_type: NodeType::File,
                 node_index,
             };
-            self.file_mapping.insert(name.to_string(), node_data);
+            self.file_mapping.insert(name_rc, node_data);
         }
     }
 
     pub fn add_issue_node(&mut self, name: &String) {
         if !self.issue_mapping.contains_key(name) {
-            let node_index = self.g.add_node(name.clone());
+            let name_rc: Arc<String> = Arc::from(name.to_string());
+            let node_index = self.g.add_node(name_rc.clone());
             let node_data = NodeData {
-                _name: name.clone(),
+                _name: name_rc.clone(),
                 _node_type: NodeType::Issue,
                 node_index,
             };
-            self.issue_mapping.insert(name.to_string(), node_data);
+            self.issue_mapping.insert(name_rc, node_data);
         }
     }
 
@@ -122,7 +126,7 @@ impl RelationGraph {
                 }
                 return true;
             })
-            .map(|node_index| self.g[node_index].clone())
+            .map(|node_index| self.g[node_index].to_string())
             .collect();
 
         Ok(related_commits)
@@ -143,7 +147,7 @@ impl RelationGraph {
                 }
                 return true;
             })
-            .map(|node_index| self.g[node_index].clone())
+            .map(|node_index| self.g[node_index].to_string())
             .collect();
 
         Ok(related_issues)
