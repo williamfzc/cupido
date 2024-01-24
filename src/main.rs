@@ -1,11 +1,16 @@
-use clap::{Parser};
+use clap::Parser;
 use cupido::collector::{walk, Config};
 use cupido::server::app::server_main;
 use cupido::server::config::ServerConfig;
+use std::time::Instant;
 use tracing::info;
 
 #[derive(Parser, Debug)]
-#[clap(name = "cupido", bin_name = "cupido", about = "Cupido command line tool")]
+#[clap(
+    name = "cupido",
+    bin_name = "cupido",
+    about = "Cupido command line tool"
+)]
 struct Cli {
     #[clap(subcommand)]
     cmd: SubCommand,
@@ -50,8 +55,13 @@ fn handle_up(up_cmd: UpCommand) {
     }
 
     info!("config: {:?}", up_cmd);
+    let start_time = Instant::now();
     let graph = walk(conf);
-    info!("graph ready: {:?}", graph.size());
+    info!(
+        "graph ready in {:?}: {:?}",
+        start_time.elapsed(),
+        graph.size()
+    );
 
     let server_conf = ServerConfig::new(graph);
     info!("server up");
