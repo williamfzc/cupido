@@ -1,7 +1,7 @@
 use petgraph::graph::{NodeIndex, UnGraph};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fmt::Error;
+use std::fmt::{Display, Error, Formatter};
 use std::fs::File;
 use std::io::Write;
 use std::sync::Arc;
@@ -10,6 +10,18 @@ enum NodeType {
     File,
     Commit,
     Issue,
+}
+
+#[derive(Debug)]
+enum EdgeType {
+    File2Commit,
+    File2Issue,
+}
+
+impl Display for EdgeType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 pub struct NodeData {
@@ -22,7 +34,7 @@ pub struct RelationGraph {
     file_mapping: HashMap<Arc<String>, NodeData>,
     commit_mapping: HashMap<Arc<String>, NodeData>,
     issue_mapping: HashMap<Arc<String>, NodeData>,
-    g: UnGraph<Arc<String>, String>,
+    g: UnGraph<Arc<String>, EdgeType>,
 }
 
 impl RelationGraph {
@@ -31,7 +43,7 @@ impl RelationGraph {
             file_mapping: HashMap::<Arc<String>, NodeData>::new(),
             commit_mapping: HashMap::<Arc<String>, NodeData>::new(),
             issue_mapping: HashMap::<Arc<String>, NodeData>::new(),
-            g: UnGraph::<Arc<String>, String>::new_undirected(),
+            g: UnGraph::<Arc<String>, EdgeType>::new_undirected(),
         };
     }
 
@@ -86,7 +98,6 @@ impl RelationGraph {
         &mut self,
         file_name: &String,
         commit_name: &String,
-        edge_label: &String,
     ) {
         if let (Some(file_data), Some(commit_data)) = (
             self.file_mapping.get(file_name),
@@ -94,20 +105,27 @@ impl RelationGraph {
         ) {
             let file_index = file_data.node_index;
             let commit_index = commit_data.node_index;
+
+            if let Some(..) = self.g.find_edge(file_index, commit_index) {
+                return;
+            }
             self.g
-                .add_edge(file_index, commit_index, edge_label.to_string());
+                .add_edge(file_index, commit_index, EdgeType::File2Commit);
         }
     }
 
-    pub fn add_edge_file2issue(&mut self, file_name: &String, issue: &String, edge_label: &String) {
+    pub fn add_edge_file2issue(&mut self, file_name: &String, issue: &String) {
         if let (Some(file_data), Some(issue_data)) = (
             self.file_mapping.get(file_name),
             self.issue_mapping.get(issue),
         ) {
             let file_index = file_data.node_index;
             let commit_index = issue_data.node_index;
+            if let Some(..) = self.g.find_edge(file_index, commit_index) {
+                return;
+            }
             self.g
-                .add_edge(file_index, commit_index, edge_label.to_string());
+                .add_edge(file_index, commit_index, EdgeType::File2Issue);
         }
     }
 

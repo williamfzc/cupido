@@ -40,14 +40,14 @@ fn walk_dfs(conf: &Config, repo: &Repository) -> RelationGraph {
                 let commit_id_str = &commit_id.to_string();
                 graph.add_commit_node(commit_id_str);
                 for file in &commit_result.files {
-                    graph.add_edge_file2commit(file, commit_id_str, &String::new());
+                    graph.add_edge_file2commit(file, commit_id_str);
                 }
                 // issues
                 for issue in &commit_result.issues {
                     graph.add_issue_node(issue);
 
                     for file in &commit_result.files {
-                        graph.add_edge_file2issue(file, issue, &String::new());
+                        graph.add_edge_file2issue(file, issue);
                     }
                 }
 
