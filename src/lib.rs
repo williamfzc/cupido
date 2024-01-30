@@ -1,4 +1,3 @@
-pub mod server;
-
 pub mod collector;
-mod graph;
+pub mod relation;
+pub mod server;

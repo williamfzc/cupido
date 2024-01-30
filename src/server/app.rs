@@ -1,6 +1,6 @@
-use crate::graph::RelationGraph;
+use crate::relation::graph::RelationGraph;
 use crate::server::config::ServerConfig;
-use crate::server::handler::{create_router};
+use crate::server::handler::create_router;
 use std::sync::{Arc, RwLock};
 
 lazy_static::lazy_static! {

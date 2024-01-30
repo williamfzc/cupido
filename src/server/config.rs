@@ -1,4 +1,4 @@
-use crate::graph::RelationGraph;
+use crate::relation::graph::RelationGraph;
 
 pub struct ServerConfig {
     pub port: u16,

@@ -1,16 +1,17 @@
-use crate::graph::GraphSize;
+use crate::relation::graph::GraphSize;
 use axum::extract::Query;
-use axum::Router;
 use axum::routing::get;
+use axum::Router;
 use serde_derive::{Deserialize, Serialize};
 use tracing::error;
 
 pub fn create_router() -> Router {
     return Router::new()
-        .nest("/file",
-              Router::new()
-                  .route("/-/commits", get(file_related_commit_handler))
-                  .route("/-/issues", get(file_related_issue_handler)),
+        .nest(
+            "/file",
+            Router::new()
+                .route("/-/commits", get(file_related_commit_handler))
+                .route("/-/issues", get(file_related_issue_handler)),
         )
         .route("/size", get(size_handler))
         .route("/", get(root_handler));
@@ -48,7 +49,6 @@ async fn file_related_issue_handler(Query(params): Query<Params>) -> axum::Json<
         }
     };
 }
-
 
 #[derive(Debug, Deserialize)]
 struct Params {

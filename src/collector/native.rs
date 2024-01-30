@@ -1,4 +1,5 @@
-use crate::graph::RelationGraph;
+use crate::collector::config::{CommitResult, Config};
+use crate::relation::graph::RelationGraph;
 use git2::{Commit, Repository};
 use regex::Regex;
 
@@ -97,34 +98,4 @@ fn process_commit(repo: &Repository, commit: &Commit, re: &Regex) -> CommitResul
         };
     }
     return CommitResult::default();
-}
-
-struct CommitResult {
-    files: Vec<String>,
-    issues: Vec<String>,
-}
-
-impl CommitResult {
-    pub fn default() -> CommitResult {
-        return CommitResult {
-            files: Vec::new(),
-            issues: Vec::new(),
-        };
-    }
-}
-
-pub struct Config {
-    pub repo_path: String,
-    pub depth: i32,
-    pub issue_regex: String,
-}
-
-impl Config {
-    pub fn default() -> Config {
-        return Config {
-            repo_path: String::from("."),
-            depth: 10240,
-            issue_regex: String::from(r"(#\d+)"),
-        };
-    }
 }

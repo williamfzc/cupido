@@ -1,5 +1,6 @@
 use clap::Parser;
-use cupido::collector::{walk, Config};
+use cupido::collector::config::Config;
+use cupido::collector::native::walk;
 use cupido::server::app::server_main;
 use cupido::server::config::ServerConfig;
 use std::time::Instant;
@@ -45,7 +46,7 @@ fn main() {
 fn handle_up(up_cmd: UpCommand) {
     tracing_subscriber::fmt::init();
 
-    info!("graph creating ...");
+    info!("relation creating ...");
     let mut conf = Config::default();
     if let Some(ref user_issue_regex) = up_cmd.issue_regex {
         conf.issue_regex = user_issue_regex.clone()
@@ -58,7 +59,7 @@ fn handle_up(up_cmd: UpCommand) {
     let start_time = Instant::now();
     let graph = walk(conf);
     info!(
-        "graph ready in {:?}: {:?}",
+        "relation ready in {:?}: {:?}",
         start_time.elapsed(),
         graph.size()
     );

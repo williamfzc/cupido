@@ -1,6 +1,6 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use cupido::collector;
-use cupido::collector::Config;
+use cupido::collector::native;
+use cupido::collector::native::Config;
 use std::time::Duration;
 
 const TEST_DIR: &str = ".";
@@ -16,7 +16,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         b.iter(|| {
             let mut config = Config::default();
             config.repo_path = String::from(TEST_DIR);
-            collector::walk(config);
+            native::walk(config);
         })
     });
     group.finish();

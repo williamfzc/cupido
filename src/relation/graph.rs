@@ -94,11 +94,7 @@ impl RelationGraph {
         self.commit_mapping.get(name)
     }
 
-    pub fn add_edge_file2commit(
-        &mut self,
-        file_name: &String,
-        commit_name: &String,
-    ) {
+    pub fn add_edge_file2commit(&mut self, file_name: &String, commit_name: &String) {
         if let (Some(file_data), Some(commit_data)) = (
             self.file_mapping.get(file_name),
             self.commit_mapping.get(commit_name),
@@ -176,9 +172,9 @@ impl RelationGraph {
         if let Ok(mut file) = File::create(file_path) {
             file.write_all(dot.to_string().as_bytes())
                 .expect("Failed to write to file");
-            println!("DOT representation saved to 'graph.dot'");
+            println!("DOT representation saved to 'relation.dot'");
         } else {
-            eprintln!("Failed to create or write to 'graph.dot'");
+            eprintln!("Failed to create or write to 'relation.dot'");
         }
     }
 
