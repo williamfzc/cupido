@@ -1,6 +1,7 @@
 use clap::Parser;
+use cupido::collector::config::get_collector;
+use cupido::collector::config::Collect;
 use cupido::collector::config::Config;
-use cupido::collector::native::walk;
 use cupido::server::app::server_main;
 use cupido::server::config::ServerConfig;
 use std::time::Instant;
@@ -57,7 +58,9 @@ fn handle_up(up_cmd: UpCommand) {
 
     info!("config: {:?}", up_cmd);
     let start_time = Instant::now();
-    let graph = walk(conf);
+
+    let collector = get_collector();
+    let graph = collector.walk(conf);
     info!(
         "relation ready in {:?}: {:?}",
         start_time.elapsed(),

@@ -1,3 +1,6 @@
+use crate::collector::native::NativeCollector;
+use crate::relation::graph::RelationGraph;
+
 pub struct CommitResult {
     pub files: Vec<String>,
     pub issues: Vec<String>,
@@ -26,4 +29,13 @@ impl Config {
             issue_regex: String::from(r"(#\d+)"),
         };
     }
+}
+
+pub trait Collect {
+    fn walk(&self, conf: Config) -> RelationGraph;
+}
+
+pub fn get_collector() -> impl Collect {
+    let collector = NativeCollector {};
+    return collector;
 }

@@ -1,13 +1,17 @@
-use crate::collector::config::{CommitResult, Config};
+use crate::collector::config::{Collect, CommitResult, Config};
 use crate::relation::graph::RelationGraph;
 use git2::{Commit, Repository};
 use regex::Regex;
 
-pub fn walk(conf: Config) -> RelationGraph {
-    let repo_path = &conf.repo_path;
+pub struct NativeCollector {}
 
-    let repo = Repository::open(repo_path).expect("Failed to open repository");
-    return walk_dfs(&conf, &repo);
+impl Collect for NativeCollector {
+    fn walk(&self, conf: Config) -> RelationGraph {
+        let repo_path = &conf.repo_path;
+
+        let repo = Repository::open(repo_path).expect("Failed to open repository");
+        return walk_dfs(&conf, &repo);
+    }
 }
 
 fn walk_dfs(conf: &Config, repo: &Repository) -> RelationGraph {
