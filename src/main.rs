@@ -34,6 +34,10 @@ struct UpCommand {
     /// Root location
     #[clap(short, long)]
     repo_path: Option<String>,
+
+    /// File include
+    #[clap(short, long)]
+    path_specs: Option<String>,
 }
 
 fn main() {
@@ -54,6 +58,9 @@ fn handle_up(up_cmd: UpCommand) {
     }
     if let Some(ref repo_path) = up_cmd.repo_path {
         conf.repo_path = repo_path.clone()
+    }
+    if let Some(ref path_specs) = up_cmd.path_specs {
+        conf.path_specs = path_specs.split(";").map(|a| a.into()).collect();
     }
 
     info!("config: {:?}", up_cmd);

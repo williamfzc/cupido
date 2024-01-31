@@ -19,6 +19,7 @@ pub struct Config {
     pub repo_path: String,
     pub depth: i32,
     pub issue_regex: String,
+    pub path_specs: Vec<String>,
 }
 
 impl Config {
@@ -27,6 +28,7 @@ impl Config {
             repo_path: String::from("."),
             depth: 10240,
             issue_regex: String::from(r"(#\d+)"),
+            path_specs: Vec::default(),
         };
     }
 }

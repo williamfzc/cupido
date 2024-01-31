@@ -1,6 +1,6 @@
 use crate::collector::config::{Collect, CommitResult, Config};
 use crate::relation::graph::RelationGraph;
-use git2::{Commit, Repository};
+use git2::{Commit, DiffOptions, Repository};
 use regex::Regex;
 
 pub struct NativeCollector {}
@@ -35,7 +35,11 @@ fn walk_dfs(conf: &Config, repo: &Repository) -> RelationGraph {
     for id in revwalk {
         if let Ok(commit_id) = id {
             if let Ok(commit) = repo.find_commit(commit_id) {
-                let commit_result = process_commit(&repo, &commit, &issue_regex);
+                let commit_result = process_commit(&repo, &commit, &issue_regex, &conf);
+
+                if commit_result.files.is_empty() {
+                    continue;
+                }
 
                 // files
                 for file in &commit_result.files {
@@ -71,14 +75,26 @@ fn walk_dfs(conf: &Config, repo: &Repository) -> RelationGraph {
     return graph;
 }
 
-fn process_commit(repo: &Repository, commit: &Commit, re: &Regex) -> CommitResult {
+fn process_commit(repo: &Repository, commit: &Commit, re: &Regex, conf: &Config) -> CommitResult {
     if let Some(parent) = commit.parent(0).ok() {
+        // TODO: seems that we should do a cache here
+        // libgit2 also has a cache too:
+        // https://github.com/libgit2/libgit2/blob/9b2577f8e0ea5e412040566176636b26843ce67d/src/libgit2/object.c#L189
         let parent_tree = parent.tree().expect("Failed to get parent tree");
         let current_tree = commit.tree().expect("Failed to get commit tree");
 
         // Compare the trees and print changed files
+        let mut opts = DiffOptions::default();
+        for each in &conf.path_specs {
+            opts.pathspec(each);
+        }
+
         let changes = repo
-            .diff_tree_to_tree(Some(&parent_tree), Some(&current_tree), None)
+            .diff_tree_to_tree(
+                Some(&parent_tree),
+                Some(&current_tree),
+                Option::from(&mut opts),
+            )
             .expect("Failed to get diff");
         let changed_files: Vec<String> = changes
             .deltas()
