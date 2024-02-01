@@ -93,12 +93,18 @@ fn process_commit(repo: &Repository, commit: &Commit, re: &Regex, conf: &Config)
         let parent_tree = parent.tree().expect("Failed to get parent tree");
         let current_tree = commit.tree().expect("Failed to get commit tree");
 
-        // Compare the trees and print changed files
+        // https://libgit2.org/libgit2/#HEAD/type/git_diff_options
         let mut opts = DiffOptions::default();
         for each in &conf.path_specs {
             opts.pathspec(each);
         }
+        opts.minimal(true);
+        opts.include_unmodified(false);
+        opts.include_ignored(false);
+        opts.ignore_filemode(true);
+        opts.force_text(true);
 
+        // fast but not very fast ...
         let changes = repo
             .diff_tree_to_tree(
                 Some(&parent_tree),
