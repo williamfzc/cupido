@@ -74,6 +74,7 @@ fn walk_dfs(conf: &Config, repo: &Repository) -> RelationGraph {
             for file in &commit_result.files {
                 graph.add_edge_file2issue(file, issue);
             }
+            graph.add_edge_commit2issue(commit_id_str, issue);
         }
 
         counter += 1;

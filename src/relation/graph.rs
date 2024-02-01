@@ -16,6 +16,7 @@ enum NodeType {
 enum EdgeType {
     File2Commit,
     File2Issue,
+    Commit2Issue,
 }
 
 impl Display for EdgeType {
@@ -122,6 +123,21 @@ impl RelationGraph {
             }
             self.g
                 .add_edge(file_index, commit_index, EdgeType::File2Issue);
+        }
+    }
+
+    pub fn add_edge_commit2issue(&mut self, commit_name: &String, issue: &String) {
+        if let (Some(commit_data), Some(issue_data)) = (
+            self.commit_mapping.get(commit_name),
+            self.issue_mapping.get(issue),
+        ) {
+            let commit_index = commit_data.node_index;
+            let issue_index = issue_data.node_index;
+            if let Some(..) = self.g.find_edge(commit_index, issue_index) {
+                return;
+            }
+            self.g
+                .add_edge(commit_index, issue_index, EdgeType::Commit2Issue);
         }
     }
 
