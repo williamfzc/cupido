@@ -33,42 +33,52 @@ fn walk_dfs(conf: &Config, repo: &Repository) -> RelationGraph {
     let issue_regex: Regex = Regex::new(&*conf.issue_regex).unwrap();
 
     for id in revwalk {
-        if let Ok(commit_id) = id {
-            if let Ok(commit) = repo.find_commit(commit_id) {
-                let commit_result = process_commit(&repo, &commit, &issue_regex, &conf);
-
-                if commit_result.files.is_empty() {
-                    continue;
-                }
-
-                // files
-                for file in &commit_result.files {
-                    graph.add_file_node(file);
-                }
-                // commits
-                let commit_id_str = &commit_id.to_string();
-                graph.add_commit_node(commit_id_str);
-                for file in &commit_result.files {
-                    graph.add_edge_file2commit(file, commit_id_str);
-                }
-                // issues
-                for issue in &commit_result.issues {
-                    graph.add_issue_node(issue);
-
-                    for file in &commit_result.files {
-                        graph.add_edge_file2issue(file, issue);
-                    }
-                }
-
-                counter += 1;
-                if counter > conf.depth {
-                    break;
-                }
-            } else {
-                eprintln!("Failed to find commit {}", commit_id);
+        let commit_id = match id {
+            Ok(commit_id) => commit_id,
+            Err(_) => {
+                eprintln!("Failed to get commit id");
+                continue;
             }
-        } else {
-            eprintln!("Failed to get commit id");
+        };
+
+        let commit = match repo.find_commit(commit_id) {
+            Ok(commit) => commit,
+            Err(_) => {
+                eprintln!("Failed to find commit {}", commit_id);
+                continue;
+            }
+        };
+
+        let commit_result = process_commit(&repo, &commit, &issue_regex, &conf);
+
+        if commit_result.files.is_empty() {
+            continue;
+        }
+
+        // files
+        for file in &commit_result.files {
+            graph.add_file_node(file);
+        }
+
+        // commits
+        let commit_id_str = &commit_id.to_string();
+        graph.add_commit_node(commit_id_str);
+        for file in &commit_result.files {
+            graph.add_edge_file2commit(file, commit_id_str);
+        }
+
+        // issues
+        for issue in &commit_result.issues {
+            graph.add_issue_node(issue);
+
+            for file in &commit_result.files {
+                graph.add_edge_file2issue(file, issue);
+            }
+        }
+
+        counter += 1;
+        if counter > conf.depth {
+            break;
         }
     }
 
