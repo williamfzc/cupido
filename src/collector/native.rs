@@ -25,7 +25,11 @@ fn walk_dfs(conf: &Config, repo: &Repository) -> RelationGraph {
     revwalk.push(head.id()).expect("Failed to push commit");
 
     // top to bottom
-    let _ = revwalk.set_sorting(git2::Sort::TIME);
+    revwalk.set_sorting(git2::Sort::TIME).expect("TODO: panic message");
+
+    // only the first parent, for performance
+    // good solution for large repo
+    revwalk.simplify_first_parent().expect("TODO: panic message");
 
     let mut counter = 0;
     let mut graph = RelationGraph::new();
@@ -106,6 +110,7 @@ fn process_commit(repo: &Repository, commit: &Commit, re: &Regex, conf: &Config)
         opts.force_text(true);
 
         // fast but not very fast ...
+        // when the trees are large
         let changes = repo
             .diff_tree_to_tree(
                 Some(&parent_tree),
