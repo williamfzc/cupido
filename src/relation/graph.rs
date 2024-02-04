@@ -207,6 +207,21 @@ impl RelationGraph {
         }
     }
 
+    pub fn export_file_issue_mapping(&self) -> HashMap<String, Vec<String>> {
+        let mut ret = HashMap::new();
+        for (f, _) in &self.file_mapping {
+            let fs = f.to_string();
+            let issues: Result<Vec<String>, Error> = self.file_related_issues(&fs);
+
+            if let Ok(ok_issues) = issues {
+                if !ok_issues.is_empty() {
+                    ret.insert(fs.clone(), ok_issues);
+                }
+            }
+        }
+        return ret;
+    }
+
     pub fn file_size(&self) -> usize {
         return self.file_mapping.len();
     }
