@@ -10,8 +10,20 @@ pub fn create_router() -> Router {
         .nest(
             "/file",
             Router::new()
-                .route("/-/commits", get(file_related_commit_handler))
-                .route("/-/issues", get(file_related_issue_handler)),
+                .route("/-/commits", get(file_related_commits_handler))
+                .route("/-/issues", get(file_related_issues_handler)),
+        )
+        .nest(
+            "/issue",
+            Router::new()
+                .route("/-/files", get(issue_related_files_handler))
+                .route("/-/commits", get(issue_related_commits_handler)),
+        )
+        .nest(
+            "/commit",
+            Router::new()
+                .route("/-/files", get(commit_related_files_handler))
+                .route("/-/issues", get(commit_related_issues_handler)),
         )
         .route("/size", get(size_handler))
         .route("/", get(root_handler));
@@ -28,7 +40,7 @@ async fn root_handler() -> axum::Json<Desc> {
     })
 }
 
-async fn file_related_commit_handler(Query(params): Query<Params>) -> axum::Json<Vec<String>> {
+async fn file_related_commits_handler(Query(params): Query<FileParams>) -> axum::Json<Vec<String>> {
     let conf = crate::server::app::SERVER_CONFIG.read().unwrap();
     return match conf.graph.file_related_commits(&params.file) {
         Ok(commits) => axum::Json(commits),
@@ -39,7 +51,7 @@ async fn file_related_commit_handler(Query(params): Query<Params>) -> axum::Json
     };
 }
 
-async fn file_related_issue_handler(Query(params): Query<Params>) -> axum::Json<Vec<String>> {
+async fn file_related_issues_handler(Query(params): Query<FileParams>) -> axum::Json<Vec<String>> {
     let conf = crate::server::app::SERVER_CONFIG.read().unwrap();
     return match conf.graph.file_related_issues(&params.file) {
         Ok(issues) => axum::Json(issues),
@@ -50,9 +62,69 @@ async fn file_related_issue_handler(Query(params): Query<Params>) -> axum::Json<
     };
 }
 
+async fn issue_related_files_handler(Query(params): Query<IssueParams>) -> axum::Json<Vec<String>> {
+    let conf = crate::server::app::SERVER_CONFIG.read().unwrap();
+    return match conf.graph.issue_related_files(&params.issue) {
+        Ok(issues) => axum::Json(issues),
+        Err(error) => {
+            error!("file_related_issues error: {}", error);
+            axum::Json(Vec::new())
+        }
+    };
+}
+
+async fn issue_related_commits_handler(
+    Query(params): Query<IssueParams>,
+) -> axum::Json<Vec<String>> {
+    let conf = crate::server::app::SERVER_CONFIG.read().unwrap();
+    return match conf.graph.issue_related_commits(&params.issue) {
+        Ok(issues) => axum::Json(issues),
+        Err(error) => {
+            error!("file_related_issues error: {}", error);
+            axum::Json(Vec::new())
+        }
+    };
+}
+
+async fn commit_related_files_handler(
+    Query(params): Query<CommitParams>,
+) -> axum::Json<Vec<String>> {
+    let conf = crate::server::app::SERVER_CONFIG.read().unwrap();
+    return match conf.graph.commit_related_files(&params.commit) {
+        Ok(issues) => axum::Json(issues),
+        Err(error) => {
+            error!("file_related_issues error: {}", error);
+            axum::Json(Vec::new())
+        }
+    };
+}
+
+async fn commit_related_issues_handler(
+    Query(params): Query<CommitParams>,
+) -> axum::Json<Vec<String>> {
+    let conf = crate::server::app::SERVER_CONFIG.read().unwrap();
+    return match conf.graph.commit_related_issues(&params.commit) {
+        Ok(issues) => axum::Json(issues),
+        Err(error) => {
+            error!("file_related_issues error: {}", error);
+            axum::Json(Vec::new())
+        }
+    };
+}
+
 #[derive(Debug, Deserialize)]
-struct Params {
+struct FileParams {
     file: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct CommitParams {
+    commit: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct IssueParams {
+    issue: String,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
