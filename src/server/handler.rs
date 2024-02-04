@@ -30,7 +30,7 @@ async fn root_handler() -> axum::Json<Desc> {
 
 async fn file_related_commit_handler(Query(params): Query<Params>) -> axum::Json<Vec<String>> {
     let conf = crate::server::app::SERVER_CONFIG.read().unwrap();
-    return match conf.graph.related_commits(&params.file) {
+    return match conf.graph.file_related_commits(&params.file) {
         Ok(commits) => axum::Json(commits),
         Err(error) => {
             error!("file_related_commit error: {}", error);
@@ -41,7 +41,7 @@ async fn file_related_commit_handler(Query(params): Query<Params>) -> axum::Json
 
 async fn file_related_issue_handler(Query(params): Query<Params>) -> axum::Json<Vec<String>> {
     let conf = crate::server::app::SERVER_CONFIG.read().unwrap();
-    return match conf.graph.related_issues(&params.file) {
+    return match conf.graph.file_related_issues(&params.file) {
         Ok(issues) => axum::Json(issues),
         Err(error) => {
             error!("file_related_issues error: {}", error);

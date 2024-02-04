@@ -6,6 +6,7 @@ use std::fs::File;
 use std::io::Write;
 use std::sync::Arc;
 
+// todo: specific data can be saved here
 enum NodeType {
     File,
     Commit,
@@ -31,10 +32,12 @@ pub struct NodeData {
     node_index: NodeIndex,
 }
 
+type NodeMapping = HashMap<Arc<String>, NodeData>;
+
 pub struct RelationGraph {
-    file_mapping: HashMap<Arc<String>, NodeData>,
-    commit_mapping: HashMap<Arc<String>, NodeData>,
-    issue_mapping: HashMap<Arc<String>, NodeData>,
+    file_mapping: NodeMapping,
+    commit_mapping: NodeMapping,
+    issue_mapping: NodeMapping,
     g: UnGraph<Arc<String>, EdgeType>,
 }
 
@@ -95,6 +98,10 @@ impl RelationGraph {
         self.commit_mapping.get(name)
     }
 
+    pub fn get_issue_node(&self, name: &String) -> Option<&NodeData> {
+        self.issue_mapping.get(name)
+    }
+
     pub fn add_edge_file2commit(&mut self, file_name: &String, commit_name: &String) {
         if let (Some(file_data), Some(commit_data)) = (
             self.file_mapping.get(file_name),
@@ -141,17 +148,20 @@ impl RelationGraph {
         }
     }
 
-    pub fn related_commits(&self, file_name: &String) -> Result<Vec<String>, Error> {
-        if !self.file_mapping.contains_key(file_name) {
+    fn find_related(
+        &self,
+        entry: &String,
+        src: &NodeMapping,
+        target: &NodeMapping,
+    ) -> Result<Vec<String>, Error> {
+        if !src.contains_key(entry) {
             return Err(Error::default());
         }
-        let neighbors = self
-            .g
-            .neighbors(self.get_file_node(file_name).unwrap().node_index);
-        let related_commits: Vec<String> = neighbors
+        let neighbors = self.g.neighbors(src[entry].node_index);
+        let related: Vec<String> = neighbors
             .filter(|node_index| {
                 let data = self.g[*node_index].to_string();
-                if !self.commit_mapping.contains_key(&data) {
+                if !target.contains_key(&data) {
                     return false;
                 }
                 return true;
@@ -159,28 +169,31 @@ impl RelationGraph {
             .map(|node_index| self.g[node_index].to_string())
             .collect();
 
-        Ok(related_commits)
+        Ok(related)
     }
 
-    pub fn related_issues(&self, file_name: &String) -> Result<Vec<String>, Error> {
-        if !self.file_mapping.contains_key(file_name) {
-            return Err(Error::default());
-        }
-        let neighbors = self
-            .g
-            .neighbors(self.get_file_node(file_name).unwrap().node_index);
-        let related_issues: Vec<String> = neighbors
-            .filter(|node_index| {
-                let data = self.g[*node_index].to_string();
-                if !self.issue_mapping.contains_key(&data) {
-                    return false;
-                }
-                return true;
-            })
-            .map(|node_index| self.g[node_index].to_string())
-            .collect();
+    pub fn file_related_commits(&self, file_name: &String) -> Result<Vec<String>, Error> {
+        return self.find_related(file_name, &self.file_mapping, &self.commit_mapping);
+    }
 
-        Ok(related_issues)
+    pub fn file_related_issues(&self, file_name: &String) -> Result<Vec<String>, Error> {
+        return self.find_related(file_name, &self.file_mapping, &self.issue_mapping);
+    }
+
+    pub fn issue_related_files(&self, issue_name: &String) -> Result<Vec<String>, Error> {
+        return self.find_related(issue_name, &self.issue_mapping, &self.file_mapping);
+    }
+
+    pub fn issue_related_commits(&self, issue_name: &String) -> Result<Vec<String>, Error> {
+        return self.find_related(issue_name, &self.issue_mapping, &self.commit_mapping);
+    }
+
+    pub fn commit_related_files(&self, commit_name: &String) -> Result<Vec<String>, Error> {
+        return self.find_related(commit_name, &self.commit_mapping, &self.file_mapping);
+    }
+
+    pub fn commit_related_issues(&self, commit_name: &String) -> Result<Vec<String>, Error> {
+        return self.find_related(commit_name, &self.commit_mapping, &self.issue_mapping);
     }
 
     pub fn export_dot(&self, file_path: &str) {

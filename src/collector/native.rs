@@ -25,11 +25,15 @@ fn walk_dfs(conf: &Config, repo: &Repository) -> RelationGraph {
     revwalk.push(head.id()).expect("Failed to push commit");
 
     // top to bottom
-    revwalk.set_sorting(git2::Sort::TIME).expect("TODO: panic message");
+    revwalk
+        .set_sorting(git2::Sort::TIME)
+        .expect("TODO: panic message");
 
     // only the first parent, for performance
     // good solution for large repo
-    revwalk.simplify_first_parent().expect("TODO: panic message");
+    revwalk
+        .simplify_first_parent()
+        .expect("TODO: panic message");
 
     let mut counter = 0;
     let mut graph = RelationGraph::new();
