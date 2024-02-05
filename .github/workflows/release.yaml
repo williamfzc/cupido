@@ -9,6 +9,17 @@ on:
       - v*
 
 jobs:
+  cargo-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - uses: katyo/publish-crates@v2
+        with:
+          registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
   create-release:
     runs-on: ubuntu-latest
     steps:
@@ -31,6 +42,5 @@ jobs:
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
           bin: cupido
-          tar: unix
-          zip: windows
+          zip: all
           token: ${{ secrets.GITHUB_TOKEN }}
