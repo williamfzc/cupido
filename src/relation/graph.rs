@@ -6,12 +6,17 @@ use std::fs::File;
 use std::io::Write;
 use std::sync::Arc;
 
-// todo: specific data can be saved here
 enum NodeType {
-    File,
-    Commit,
-    Issue,
+    File(Option<FileData>),
+    Commit(Option<CommitData>),
+    Issue(Option<IssueData>),
 }
+
+struct FileData {}
+
+struct CommitData {}
+
+struct IssueData {}
 
 #[derive(Debug)]
 enum EdgeType {
@@ -57,7 +62,7 @@ impl RelationGraph {
             let node_index = self.g.add_node(name_rc.clone());
             let node_data = NodeData {
                 _name: name_rc.clone(),
-                _node_type: NodeType::Commit,
+                _node_type: NodeType::Commit(None),
                 node_index,
             };
             self.commit_mapping.insert(name_rc, node_data);
@@ -70,7 +75,7 @@ impl RelationGraph {
             let node_index = self.g.add_node(name_rc.clone());
             let node_data = NodeData {
                 _name: name_rc.clone(),
-                _node_type: NodeType::File,
+                _node_type: NodeType::File(None),
                 node_index,
             };
             self.file_mapping.insert(name_rc, node_data);
@@ -83,7 +88,7 @@ impl RelationGraph {
             let node_index = self.g.add_node(name_rc.clone());
             let node_data = NodeData {
                 _name: name_rc.clone(),
-                _node_type: NodeType::Issue,
+                _node_type: NodeType::Issue(None),
                 node_index,
             };
             self.issue_mapping.insert(name_rc, node_data);
