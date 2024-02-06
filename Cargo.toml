@@ -2,8 +2,8 @@
 name = "cupido"
 version = "0.2.0"
 edition = "2021"
-description = "Networking your files in seconds."
-license-file = "./LICENSE"
+description = "Explore your codebase with graph view."
+license = "Apache-2.0"
 
 [dependencies]
 git2 = "0.18.1"
