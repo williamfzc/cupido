@@ -5,6 +5,7 @@ use std::fmt::{Display, Error, Formatter};
 use std::fs::File;
 use std::io::Write;
 use std::sync::Arc;
+use petgraph::dot::Config;
 
 enum NodeType {
     File(Option<FileData>),
@@ -202,13 +203,25 @@ impl RelationGraph {
     }
 
     pub fn export_dot(&self, file_path: &str) {
-        let dot = petgraph::dot::Dot::with_config(&self.g, &[]);
+        // copy a new graph for filters
+        let mut graph = RelationGraph::new();
+        for (each, _) in &self.file_mapping {
+            graph.add_file_node(each)
+        }
+        for (each, _) in &self.issue_mapping {
+            graph.add_issue_node(each);
+            for each_file in &self.issue_related_files(each).unwrap() {
+                graph.add_edge_file2issue(each_file, each)
+            }
+        }
+
+        let dot = petgraph::dot::Dot::with_config(&graph.g, &[Config::EdgeNoLabel]);
         if let Ok(mut file) = File::create(file_path) {
             file.write_all(dot.to_string().as_bytes())
                 .expect("Failed to write to file");
-            println!("DOT representation saved to 'relation.dot'");
+            println!("DOT representation saved to '{}'", file_path);
         } else {
-            eprintln!("Failed to create or write to 'relation.dot'");
+            eprintln!("Failed to create or write to '{}'", file_path);
         }
     }
 

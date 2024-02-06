@@ -41,3 +41,14 @@ fn graph_query() {
     println!("Issue: {}", issue_name);
     println!("Issue-related files: {:?}", files);
 }
+
+#[test]
+fn graph_export() {
+    let mut config = Config::default();
+    config.repo_path = ".".parse().unwrap();
+    // Collect the graph
+    let collector = get_collector();
+    let graph = collector.walk(config);
+
+    graph.export_dot("a.dot");
+}
