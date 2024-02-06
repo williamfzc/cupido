@@ -27,13 +27,15 @@ fn walk_dfs(conf: &Config, repo: &Repository) -> RelationGraph {
     // top to bottom
     revwalk
         .set_sorting(git2::Sort::TIME)
-        .expect("TODO: panic message");
+        .expect("failed to set sorting");
 
     // only the first parent, for performance
     // good solution for large repo
-    revwalk
-        .simplify_first_parent()
-        .expect("TODO: panic message");
+    if !conf.multi_parents {
+        revwalk
+            .simplify_first_parent()
+            .expect("failed to set simplify_first_parent");
+    }
 
     let mut counter = 0;
     let mut graph = RelationGraph::new();

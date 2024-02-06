@@ -20,6 +20,7 @@ pub struct Config {
     pub depth: i32,
     pub issue_regex: String,
     pub path_specs: Vec<String>,
+    pub multi_parents: bool,
 }
 
 impl Config {
@@ -29,6 +30,7 @@ impl Config {
             depth: 10240,
             issue_regex: String::from(r"(#\d+)"),
             path_specs: Vec::default(),
+            multi_parents: false,
         };
     }
 }

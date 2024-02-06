@@ -1,3 +1,4 @@
+use petgraph::dot::Config;
 use petgraph::graph::{NodeIndex, UnGraph};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -5,7 +6,6 @@ use std::fmt::{Display, Error, Formatter};
 use std::fs::File;
 use std::io::Write;
 use std::sync::Arc;
-use petgraph::dot::Config;
 
 enum NodeType {
     File(Option<FileData>),

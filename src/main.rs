@@ -43,6 +43,10 @@ struct UpCommand {
     /// File include
     #[clap(short, long)]
     path_specs: Option<String>,
+
+    /// Multi parents search
+    #[clap(short, long)]
+    multi_parents: Option<bool>,
 }
 
 #[derive(Parser, Debug)]
@@ -62,6 +66,10 @@ struct MapCommand {
     /// Output
     #[clap(short, long)]
     output_json: Option<String>,
+
+    /// Multi parents search
+    #[clap(short, long)]
+    multi_parents: Option<bool>,
 }
 
 fn main() {
@@ -86,6 +94,9 @@ fn handle_map(map_command: MapCommand) {
     }
     if let Some(ref path_specs) = map_command.path_specs {
         conf.path_specs = path_specs.split(";").map(|a| a.into()).collect();
+    }
+    if let Some(ref multi_parents) = map_command.multi_parents {
+        conf.multi_parents = multi_parents.clone()
     }
 
     info!("config: {:?}", map_command);
@@ -122,6 +133,9 @@ fn handle_up(up_cmd: UpCommand) {
     }
     if let Some(ref path_specs) = up_cmd.path_specs {
         conf.path_specs = path_specs.split(";").map(|a| a.into()).collect();
+    }
+    if let Some(ref multi_parents) = up_cmd.multi_parents {
+        conf.multi_parents = multi_parents.clone()
     }
 
     info!("config: {:?}", up_cmd);
