@@ -44,56 +44,51 @@ pub struct RelationGraph {
     file_mapping: NodeMapping,
     commit_mapping: NodeMapping,
     issue_mapping: NodeMapping,
+    author_mapping: NodeMapping,
     g: UnGraph<Arc<String>, EdgeType>,
 }
 
+// core functions
 impl RelationGraph {
     pub fn new() -> RelationGraph {
         return RelationGraph {
-            file_mapping: HashMap::<Arc<String>, NodeData>::new(),
-            commit_mapping: HashMap::<Arc<String>, NodeData>::new(),
-            issue_mapping: HashMap::<Arc<String>, NodeData>::new(),
+            file_mapping: NodeMapping::new(),
+            commit_mapping: NodeMapping::new(),
+            issue_mapping: NodeMapping::new(),
+            author_mapping: NodeMapping::new(),
             g: UnGraph::<Arc<String>, EdgeType>::new_undirected(),
         };
     }
 
-    pub fn add_commit_node(&mut self, name: &String) {
-        if !self.commit_mapping.contains_key(name) {
+    fn add_node(&mut self, name: &String, node_type: NodeType) {
+        let mapping = match node_type {
+            NodeType::Commit(_) => &mut self.commit_mapping,
+            NodeType::File(_) => &mut self.file_mapping,
+            NodeType::Issue(_) => &mut self.issue_mapping,
+        };
+
+        if !mapping.contains_key(name) {
             let name_rc: Arc<String> = Arc::from(name.to_string());
             let node_index = self.g.add_node(name_rc.clone());
             let node_data = NodeData {
                 _name: name_rc.clone(),
-                _node_type: NodeType::Commit(None),
+                _node_type: node_type,
                 node_index,
             };
-            self.commit_mapping.insert(name_rc, node_data);
+            mapping.insert(name_rc, node_data);
         }
+    }
+
+    pub fn add_commit_node(&mut self, name: &String) {
+        return self.add_node(name, NodeType::Commit(None));
     }
 
     pub fn add_file_node(&mut self, name: &String) {
-        if !self.file_mapping.contains_key(name) {
-            let name_rc: Arc<String> = Arc::from(name.to_string());
-            let node_index = self.g.add_node(name_rc.clone());
-            let node_data = NodeData {
-                _name: name_rc.clone(),
-                _node_type: NodeType::File(None),
-                node_index,
-            };
-            self.file_mapping.insert(name_rc, node_data);
-        }
+        return self.add_node(name, NodeType::File(None));
     }
 
     pub fn add_issue_node(&mut self, name: &String) {
-        if !self.issue_mapping.contains_key(name) {
-            let name_rc: Arc<String> = Arc::from(name.to_string());
-            let node_index = self.g.add_node(name_rc.clone());
-            let node_data = NodeData {
-                _name: name_rc.clone(),
-                _node_type: NodeType::Issue(None),
-                node_index,
-            };
-            self.issue_mapping.insert(name_rc, node_data);
-        }
+        return self.add_node(name, NodeType::Issue(None));
     }
 
     pub fn get_file_node(&self, name: &String) -> Option<&NodeData> {
@@ -108,6 +103,13 @@ impl RelationGraph {
         self.issue_mapping.get(name)
     }
 
+    fn add_edge(&mut self, source_index: NodeIndex, target_index: NodeIndex, edge_type: EdgeType) {
+        if let Some(..) = self.g.find_edge(source_index, target_index) {
+            return;
+        }
+        self.g.add_edge(source_index, target_index, edge_type);
+    }
+
     pub fn add_edge_file2commit(&mut self, file_name: &String, commit_name: &String) {
         if let (Some(file_data), Some(commit_data)) = (
             self.file_mapping.get(file_name),
@@ -115,12 +117,7 @@ impl RelationGraph {
         ) {
             let file_index = file_data.node_index;
             let commit_index = commit_data.node_index;
-
-            if let Some(..) = self.g.find_edge(file_index, commit_index) {
-                return;
-            }
-            self.g
-                .add_edge(file_index, commit_index, EdgeType::File2Commit);
+            self.add_edge(file_index, commit_index, EdgeType::File2Commit);
         }
     }
 
@@ -130,12 +127,8 @@ impl RelationGraph {
             self.issue_mapping.get(issue),
         ) {
             let file_index = file_data.node_index;
-            let commit_index = issue_data.node_index;
-            if let Some(..) = self.g.find_edge(file_index, commit_index) {
-                return;
-            }
-            self.g
-                .add_edge(file_index, commit_index, EdgeType::File2Issue);
+            let issue_index = issue_data.node_index;
+            self.add_edge(file_index, issue_index, EdgeType::File2Issue);
         }
     }
 
@@ -146,11 +139,7 @@ impl RelationGraph {
         ) {
             let commit_index = commit_data.node_index;
             let issue_index = issue_data.node_index;
-            if let Some(..) = self.g.find_edge(commit_index, issue_index) {
-                return;
-            }
-            self.g
-                .add_edge(commit_index, issue_index, EdgeType::Commit2Issue);
+            self.add_edge(commit_index, issue_index, EdgeType::Commit2Issue);
         }
     }
 
@@ -202,6 +191,32 @@ impl RelationGraph {
         return self.find_related(commit_name, &self.commit_mapping, &self.issue_mapping);
     }
 
+    pub fn file_size(&self) -> usize {
+        return self.file_mapping.len();
+    }
+
+    pub fn commit_size(&self) -> usize {
+        return self.commit_mapping.len();
+    }
+
+    pub fn issue_size(&self) -> usize {
+        return self.issue_mapping.len();
+    }
+
+    pub fn size(&self) -> GraphSize {
+        return GraphSize {
+            file_size: self.file_size(),
+            commit_size: self.commit_size(),
+            issue_size: self.issue_size(),
+        };
+    }
+}
+
+// extension functions
+impl RelationGraph {}
+
+// export
+impl RelationGraph {
     pub fn export_dot(&self, file_path: &str) {
         // copy a new graph for filters
         let mut graph = RelationGraph::new();
@@ -238,26 +253,6 @@ impl RelationGraph {
             }
         }
         return ret;
-    }
-
-    pub fn file_size(&self) -> usize {
-        return self.file_mapping.len();
-    }
-
-    pub fn commit_size(&self) -> usize {
-        return self.commit_mapping.len();
-    }
-
-    pub fn issue_size(&self) -> usize {
-        return self.issue_mapping.len();
-    }
-
-    pub fn size(&self) -> GraphSize {
-        return GraphSize {
-            file_size: self.file_size(),
-            commit_size: self.commit_size(),
-            issue_size: self.issue_size(),
-        };
     }
 }
 
