@@ -11,6 +11,7 @@ enum NodeType {
     File(Option<FileData>),
     Commit(Option<CommitData>),
     Issue(Option<IssueData>),
+    Author(Option<AuthorData>),
 }
 
 struct FileData {}
@@ -19,11 +20,17 @@ struct CommitData {}
 
 struct IssueData {}
 
+struct AuthorData {}
+
 #[derive(Debug)]
 enum EdgeType {
+    // core
     File2Commit,
     File2Issue,
     Commit2Issue,
+
+    // options
+    Author2Commit,
 }
 
 impl Display for EdgeType {
@@ -65,6 +72,7 @@ impl RelationGraph {
             NodeType::Commit(_) => &mut self.commit_mapping,
             NodeType::File(_) => &mut self.file_mapping,
             NodeType::Issue(_) => &mut self.issue_mapping,
+            NodeType::Author(_) => &mut self.author_mapping,
         };
 
         if !mapping.contains_key(name) {
@@ -213,7 +221,22 @@ impl RelationGraph {
 }
 
 // extension functions
-impl RelationGraph {}
+impl RelationGraph {
+    pub fn add_author_node(&mut self, name: &String) {
+        return self.add_node(name, NodeType::Author(None));
+    }
+
+    pub fn add_edge_author2commit(&mut self, author_name: &String, commit_name: &String) {
+        if let (Some(commit_data), Some(author_data)) = (
+            self.commit_mapping.get(commit_name),
+            self.author_mapping.get(author_name),
+        ) {
+            let commit_index = commit_data.node_index;
+            let author_index = author_data.node_index;
+            self.add_edge(commit_index, author_index, EdgeType::Author2Commit);
+        }
+    }
+}
 
 // export
 impl RelationGraph {

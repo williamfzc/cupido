@@ -87,6 +87,11 @@ fn walk_dfs(conf: &Config, repo: &Repository) -> RelationGraph {
             graph.add_edge_commit2issue(commit_id_str, issue);
         }
 
+        // author
+        let author_str = &commit.author().to_string();
+        graph.add_author_node(author_str);
+        graph.add_edge_author2commit(author_str, commit_id_str);
+
         counter += 1;
         if counter > conf.depth {
             break;
