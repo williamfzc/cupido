@@ -126,7 +126,16 @@ Upon successful startup, you should see logs similar to the following:
 The service is exposed on port 9410, and you can access the HTTP API through it. You can use our client or other HTTP
 tools to interact with it.
 
+```shell
+➜ curl http://127.0.0.1:9410/size
+{"file_size":10486,"commit_size":6983,"issue_size":1403}
+```
+
 You can find our client and API documentation here: [node client](./client/node)
+
+### CLI
+
+Please see `cupido --help`.
 
 ## Performance
 

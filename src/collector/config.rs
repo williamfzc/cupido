@@ -21,7 +21,6 @@ pub struct Config {
     pub issue_regex: String,
     pub path_specs: Vec<String>,
     pub multi_parents: bool,
-
     // todo: node types should be optional
 }
 

@@ -1,7 +1,9 @@
-use cupido::collector::config::{Config, get_collector, Collect};
+use cupido::collector::config::{get_collector, Collect, Config};
 
 fn main() {
     let collector = get_collector();
+    let mut conf = Config::default();
+    conf.repo_path = String::from(".");
     let graph = collector.walk(Config::default());
 
     // 1. search from files to issues

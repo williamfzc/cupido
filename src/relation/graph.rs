@@ -140,7 +140,7 @@ impl RelationGraph {
 
 /// export API
 impl RelationGraph {
-    pub fn export_dot(&self, file_path: &str) {
+    fn to_simple(&self) -> RelationGraph {
         // copy a new graph for filters
         let mut graph = RelationGraph::new();
         for (each, _) in &self.file_mapping {
@@ -152,6 +152,10 @@ impl RelationGraph {
                 graph.add_edge_file2issue(each_file, each)
             }
         }
+        return graph;
+    }
+    pub fn export_dot(&self, file_path: &str) {
+        let graph = self.to_simple();
 
         let dot = petgraph::dot::Dot::with_config(&graph.g, &[Config::EdgeNoLabel]);
         if let Ok(mut file) = File::create(file_path) {
