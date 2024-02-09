@@ -150,6 +150,6 @@ fn handle_up(up_cmd: UpCommand) {
     );
 
     let server_conf = ServerConfig::new(graph);
-    info!("server up");
+    info!("server up: http://127.0.0.1:{}", server_conf.port);
     server_main(server_conf);
 }
