@@ -4,8 +4,6 @@ use cupido::collector::config::Collect;
 use cupido::collector::config::Config;
 use cupido::server::app::server_main;
 use cupido::server::config::ServerConfig;
-use std::fs::File;
-use std::io::Write;
 use std::time::Instant;
 use tracing::info;
 
@@ -26,50 +24,42 @@ enum SubCommand {
     #[clap(name = "up")]
     Up(UpCommand),
 
-    /// Extract file-issue mapping
+    /// Extract file based mapping
+    #[clap(name = "map")]
     Map(MapCommand),
+    // Diff (subset of `Extract` commands
+    // TODO
+}
+
+#[derive(Parser, Debug)]
+struct CommonOptions {
+    /// For catching issues in commit message
+    #[clap(short, long)]
+    issue_regex: Option<String>,
+
+    /// Root location
+    #[clap(short, long)]
+    repo_path: Option<String>,
+
+    /// File include
+    #[clap(short, long)]
+    path_specs: Option<String>,
+
+    /// Multi parents search
+    #[clap(short, long)]
+    multi_parents: Option<bool>,
 }
 
 #[derive(Parser, Debug)]
 struct UpCommand {
-    /// For catching issues in commit message
-    #[clap(short, long)]
-    issue_regex: Option<String>,
-
-    /// Root location
-    #[clap(short, long)]
-    repo_path: Option<String>,
-
-    /// File include
-    #[clap(short, long)]
-    path_specs: Option<String>,
-
-    /// Multi parents search
-    #[clap(short, long)]
-    multi_parents: Option<bool>,
+    #[clap(flatten)]
+    common_options: CommonOptions,
 }
 
 #[derive(Parser, Debug)]
 struct MapCommand {
-    /// For catching issues in commit message
-    #[clap(short, long)]
-    issue_regex: Option<String>,
-
-    /// Root location
-    #[clap(short, long)]
-    repo_path: Option<String>,
-
-    /// File include
-    #[clap(short, long)]
-    path_specs: Option<String>,
-
-    /// Output
-    #[clap(short, long)]
-    output_json: Option<String>,
-
-    /// Multi parents search
-    #[clap(short, long)]
-    multi_parents: Option<bool>,
+    #[clap(flatten)]
+    common_options: CommonOptions,
 }
 
 fn main() {
@@ -82,20 +72,18 @@ fn main() {
 }
 
 fn handle_map(map_command: MapCommand) {
-    tracing_subscriber::fmt::init();
-
     info!("relation creating ...");
     let mut conf = Config::default();
-    if let Some(ref user_issue_regex) = map_command.issue_regex {
+    if let Some(ref user_issue_regex) = map_command.common_options.issue_regex {
         conf.issue_regex = user_issue_regex.clone()
     }
-    if let Some(ref repo_path) = map_command.repo_path {
+    if let Some(ref repo_path) = map_command.common_options.repo_path {
         conf.repo_path = repo_path.clone()
     }
-    if let Some(ref path_specs) = map_command.path_specs {
+    if let Some(ref path_specs) = map_command.common_options.path_specs {
         conf.path_specs = path_specs.split(";").map(|a| a.into()).collect();
     }
-    if let Some(ref multi_parents) = map_command.multi_parents {
+    if let Some(ref multi_parents) = map_command.common_options.multi_parents {
         conf.multi_parents = multi_parents.clone()
     }
 
@@ -112,12 +100,9 @@ fn handle_map(map_command: MapCommand) {
 
     let mapping = graph.export_file_issue_mapping();
 
-    // to fs
+    // to stdout
     let json_string = serde_json::to_string(&mapping).expect("Failed to serialize to JSON");
-    let file_path = map_command.output_json.unwrap_or("output.json".to_string());
-    let mut file = File::create(file_path).expect("Failed to create file");
-    file.write_all(json_string.as_bytes())
-        .expect("Failed to write to file");
+    print!("{}", json_string);
 }
 
 fn handle_up(up_cmd: UpCommand) {
@@ -125,16 +110,16 @@ fn handle_up(up_cmd: UpCommand) {
 
     info!("relation creating ...");
     let mut conf = Config::default();
-    if let Some(ref user_issue_regex) = up_cmd.issue_regex {
+    if let Some(ref user_issue_regex) = up_cmd.common_options.issue_regex {
         conf.issue_regex = user_issue_regex.clone()
     }
-    if let Some(ref repo_path) = up_cmd.repo_path {
+    if let Some(ref repo_path) = up_cmd.common_options.repo_path {
         conf.repo_path = repo_path.clone()
     }
-    if let Some(ref path_specs) = up_cmd.path_specs {
+    if let Some(ref path_specs) = up_cmd.common_options.path_specs {
         conf.path_specs = path_specs.split(";").map(|a| a.into()).collect();
     }
-    if let Some(ref multi_parents) = up_cmd.multi_parents {
+    if let Some(ref multi_parents) = up_cmd.common_options.multi_parents {
         conf.multi_parents = multi_parents.clone()
     }
 
