@@ -1,9 +1,12 @@
 {
   "name": "cupido-client",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "prepublish": "npm run build",
     "build": "tsc -p tsconfig.json",
