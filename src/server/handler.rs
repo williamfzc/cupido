@@ -1,3 +1,4 @@
+use crate::collector::config::Config;
 use crate::relation::graph::GraphSize;
 use axum::extract::Query;
 use axum::routing::get;
@@ -35,8 +36,10 @@ async fn size_handler() -> axum::Json<GraphSize> {
 }
 
 async fn root_handler() -> axum::Json<Desc> {
+    let conf = crate::server::app::SERVER_CONFIG.read().unwrap();
     axum::Json(Desc {
         version: crate::server::app::VERSION.to_string(),
+        graph_conf: conf.graph.conf.clone(),
     })
 }
 
@@ -130,4 +133,5 @@ struct IssueParams {
 #[derive(Deserialize, Serialize, Debug)]
 struct Desc {
     version: String,
+    graph_conf: Config,
 }

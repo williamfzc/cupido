@@ -1,3 +1,4 @@
+use crate::collector::config::Config as CollectorConfig;
 use petgraph::dot::Config;
 use petgraph::graph::{NodeIndex, UnGraph};
 use serde_derive::{Deserialize, Serialize};
@@ -53,6 +54,7 @@ pub struct RelationGraph {
     issue_mapping: NodeMapping,
     author_mapping: NodeMapping,
     g: UnGraph<Arc<String>, EdgeType>,
+    pub(crate) conf: CollectorConfig,
 }
 
 /// query API
@@ -192,6 +194,7 @@ impl RelationGraph {
             issue_mapping: NodeMapping::new(),
             author_mapping: NodeMapping::new(),
             g: UnGraph::<Arc<String>, EdgeType>::new_undirected(),
+            conf: CollectorConfig::default(),
         };
     }
 

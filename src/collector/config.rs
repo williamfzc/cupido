@@ -1,5 +1,6 @@
 use crate::collector::native::NativeCollector;
 use crate::relation::graph::RelationGraph;
+use serde_derive::{Deserialize, Serialize};
 
 pub struct CommitResult {
     pub files: Vec<String>,
@@ -15,6 +16,7 @@ impl CommitResult {
     }
 }
 
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Config {
     pub repo_path: String,
     pub depth: i32,
@@ -23,6 +25,19 @@ pub struct Config {
     pub multi_parents: bool,
     pub progress: bool,
     // todo: node types should be optional
+}
+
+impl Clone for Config {
+    fn clone(&self) -> Self {
+        Self {
+            repo_path: self.repo_path.clone(),
+            depth: self.depth,
+            issue_regex: self.issue_regex.clone(),
+            path_specs: self.path_specs.clone(),
+            multi_parents: self.multi_parents,
+            progress: self.progress,
+        }
+    }
 }
 
 impl Config {

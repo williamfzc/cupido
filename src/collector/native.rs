@@ -12,11 +12,11 @@ impl Collect for NativeCollector {
         let repo_path = &conf.repo_path;
 
         let repo = Repository::open(repo_path).expect("Failed to open repository");
-        return walk_dfs(&conf, &repo);
+        return walk_dfs(conf, &repo);
     }
 }
 
-fn walk_dfs(conf: &Config, repo: &Repository) -> RelationGraph {
+fn walk_dfs(conf: Config, repo: &Repository) -> RelationGraph {
     let head = repo
         .head()
         .expect("Failed to get HEAD ref")
@@ -41,6 +41,7 @@ fn walk_dfs(conf: &Config, repo: &Repository) -> RelationGraph {
 
     let mut counter = 0;
     let mut graph = RelationGraph::new();
+    graph.conf = conf.clone();
 
     let issue_regex: Regex = Regex::new(&*conf.issue_regex).unwrap();
     let pb = create_progress(conf.depth as u64);
