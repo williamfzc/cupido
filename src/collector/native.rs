@@ -1,7 +1,9 @@
 use crate::collector::config::{Collect, CommitResult, Config};
 use crate::relation::graph::RelationGraph;
 use git2::{Commit, DiffOptions, Repository};
+use indicatif::{ProgressBar, ProgressState, ProgressStyle};
 use regex::Regex;
+use std::fmt::Write;
 
 pub struct NativeCollector {}
 
@@ -41,6 +43,7 @@ fn walk_dfs(conf: &Config, repo: &Repository) -> RelationGraph {
     let mut graph = RelationGraph::new();
 
     let issue_regex: Regex = Regex::new(&*conf.issue_regex).unwrap();
+    let pb = create_progress(conf.depth as u64);
 
     for id in revwalk {
         let commit_id = match id {
@@ -93,12 +96,24 @@ fn walk_dfs(conf: &Config, repo: &Repository) -> RelationGraph {
         graph.add_edge_author2commit(author_str, commit_id_str);
 
         counter += 1;
+        if conf.progress {
+            pb.inc(1);
+        }
         if counter > conf.depth {
             break;
         }
     }
 
     return graph;
+}
+
+fn create_progress(size: u64) -> ProgressBar {
+    let pb = ProgressBar::new(size);
+    pb.set_style(ProgressStyle::with_template("{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {items}/{total_items} ({eta})")
+        .unwrap()
+        .with_key("eta", |state: &ProgressState, w: &mut dyn Write| write!(w, "{:.1}s", state.eta().as_secs_f64()).unwrap())
+        .progress_chars("#>-"));
+    return pb;
 }
 
 fn process_commit(repo: &Repository, commit: &Commit, re: &Regex, conf: &Config) -> CommitResult {

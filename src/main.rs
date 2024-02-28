@@ -48,6 +48,10 @@ struct CommonOptions {
     /// Multi parents search
     #[clap(short, long)]
     multi_parents: Option<bool>,
+
+    /// Show progress
+    #[clap(long)]
+    progress: Option<bool>,
 }
 
 #[derive(Parser, Debug)]
@@ -124,6 +128,9 @@ fn handle_up(up_cmd: UpCommand) {
     }
     if let Some(ref multi_parents) = up_cmd.common_options.multi_parents {
         conf.multi_parents = multi_parents.clone()
+    }
+    if let Some(ref progress) = up_cmd.common_options.progress {
+        conf.progress = progress.clone()
     }
 
     info!("config: {:?}", up_cmd);

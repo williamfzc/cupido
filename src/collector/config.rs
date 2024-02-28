@@ -21,6 +21,7 @@ pub struct Config {
     pub issue_regex: String,
     pub path_specs: Vec<String>,
     pub multi_parents: bool,
+    pub progress: bool,
     // todo: node types should be optional
 }
 
@@ -32,6 +33,7 @@ impl Config {
             issue_regex: String::from(r"(#\d+)"),
             path_specs: Vec::default(),
             multi_parents: false,
+            progress: false,
         };
     }
 }
