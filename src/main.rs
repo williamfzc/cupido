@@ -54,6 +54,9 @@ struct CommonOptions {
 struct UpCommand {
     #[clap(flatten)]
     common_options: CommonOptions,
+
+    #[clap(long)]
+    port: Option<u16>,
 }
 
 #[derive(Parser, Debug)]
@@ -134,7 +137,10 @@ fn handle_up(up_cmd: UpCommand) {
         graph.size()
     );
 
-    let server_conf = ServerConfig::new(graph);
+    let mut server_conf = ServerConfig::new(graph);
+    if let Some(ref port) = up_cmd.port {
+        server_conf.port = *port
+    }
     info!("server up: http://127.0.0.1:{}", server_conf.port);
     server_main(server_conf);
 }
