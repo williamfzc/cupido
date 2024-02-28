@@ -8,10 +8,10 @@ use std::fmt::Write;
 pub struct NativeCollector {}
 
 impl Collect for NativeCollector {
-    fn walk(&self, conf: Config) -> RelationGraph {
+    fn walk(&self, mut conf: Config) -> RelationGraph {
         let repo_path = &conf.repo_path;
-
         let repo = Repository::open(repo_path).expect("Failed to open repository");
+        conf.repo_path = absolute_path(repo_path);
         return walk_dfs(conf, &repo);
     }
 }
@@ -167,4 +167,14 @@ fn process_commit(repo: &Repository, commit: &Commit, re: &Regex, conf: &Config)
         };
     }
     return CommitResult::default();
+}
+
+fn absolute_path(path: &str) -> String {
+    let current_dir = std::env::current_dir().expect("Failed to get current directory");
+    let absolute_path = current_dir.join(path);
+    return absolute_path
+        .canonicalize()
+        .unwrap()
+        .to_string_lossy()
+        .to_string();
 }
