@@ -9,6 +9,10 @@ enum Endpoints {
   ISSUE_COMMITS = "/issue/-/commits",
   COMMIT_FILES = "/commit/-/files",
   COMMIT_ISSUES = "/commit/-/issues",
+  ISSUE_LIST = "/issue/list",
+  AUTHOR_COMMITS = "/author/-/commits",
+  AUTHORS_LIST = "/author/list",
+  COMMIT_AUTHORS = "/commit/-/authors",
 }
 
 export class CupidoClient {
@@ -36,33 +40,53 @@ export class CupidoClient {
     return this.getData(Endpoints.SIZE);
   }
 
-  async api_fileIssues(file: string): Promise<any> {
+  async api_fileIssues(file: string): Promise<string[]> {
     const endpoint = Endpoints.FILE_ISSUES + `?file=${encodeURIComponent(file)}`;
     return this.getData(endpoint);
   }
 
-  async api_fileCommits(file: string): Promise<any> {
+  async api_fileCommits(file: string): Promise<string[]> {
     const endpoint = Endpoints.FILE_COMMITS + `?file=${encodeURIComponent(file)}`;
     return this.getData(endpoint);
   }
 
-  async api_issueFiles(issue: string): Promise<any> {
+  async api_issueFiles(issue: string): Promise<string[]> {
     const endpoint = Endpoints.ISSUE_FILES + `?issue=${encodeURIComponent(issue)}`;
     return this.getData(endpoint);
   }
 
-  async api_issueCommits(issue: string): Promise<any> {
+  async api_issueCommits(issue: string): Promise<string[]> {
     const endpoint = Endpoints.ISSUE_COMMITS + `?issue=${encodeURIComponent(issue)}`;
     return this.getData(endpoint);
   }
 
-  async api_commitFiles(commit: string): Promise<any> {
+  async api_commitFiles(commit: string): Promise<string[]> {
     const endpoint = Endpoints.COMMIT_FILES + `?commit=${encodeURIComponent(commit)}`;
     return this.getData(endpoint);
   }
 
-  async api_commitIssues(commit: string): Promise<any> {
+  async api_commitIssues(commit: string): Promise<string[]> {
     const endpoint = Endpoints.COMMIT_ISSUES + `?commit=${encodeURIComponent(commit)}`;
+    return this.getData(endpoint);
+  }
+
+  async api_issuesList(): Promise<string[]> {
+    const endpoint = Endpoints.ISSUE_LIST;
+    return this.getData(endpoint);
+  }
+
+  async api_authorRelatedCommits(author: string): Promise<string[]> {
+    const endpoint = Endpoints.AUTHOR_COMMITS + `?author=${encodeURIComponent(author)}`;;
+    return this.getData(endpoint);
+  }
+
+  async api_authorsList(): Promise<string[]> {
+    const endpoint = Endpoints.AUTHORS_LIST;
+    return this.getData(endpoint);
+  }
+
+  async api_commitRelatedAuthors(commit: string): Promise<string[]> {
+    const endpoint = Endpoints.COMMIT_AUTHORS + `?commit=${encodeURIComponent(commit)}`;
     return this.getData(endpoint);
   }
 }

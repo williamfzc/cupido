@@ -56,4 +56,10 @@ describe('CupidClient', () => {
     expect(commitIssuesData).toBeDefined();
     // Add more assertions based on the expected structure or values of commitIssuesData
   });
+
+  it('should authors', async () => {
+    const client = new CupidoClient();
+    const commitIssuesData = await client.api_authorsList();
+    expect(commitIssuesData).toBeDefined();
+  });
 });
