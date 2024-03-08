@@ -1,5 +1,8 @@
 use crate::collector::config::Config;
 use crate::relation::graph::GraphSize;
+use crate::server::handler_ext::{
+    author_related_commits_handler, authors, commit_related_authors_handler,
+};
 use axum::extract::Query;
 use axum::routing::get;
 use axum::Router;
@@ -27,7 +30,18 @@ pub fn create_router() -> Router {
                 .route("/-/issues", get(commit_related_issues_handler)),
         )
         .route("/size", get(size_handler))
-        .route("/", get(root_handler));
+        .route("/", get(root_handler))
+        // extensions
+        .nest(
+            "/author",
+            Router::new()
+                .route("/-/commits", get(author_related_commits_handler))
+                .route("list", get(authors)),
+        )
+        .nest(
+            "/commit",
+            Router::new().route("/-/authors", get(commit_related_authors_handler)),
+        );
 }
 
 async fn size_handler() -> axum::Json<GraphSize> {
@@ -121,8 +135,8 @@ struct FileParams {
 }
 
 #[derive(Debug, Deserialize)]
-struct CommitParams {
-    commit: String,
+pub(crate) struct CommitParams {
+    pub(crate) commit: String,
 }
 
 #[derive(Debug, Deserialize)]

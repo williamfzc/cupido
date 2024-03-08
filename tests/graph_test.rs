@@ -52,3 +52,17 @@ fn graph_export() {
 
     graph.export_dot("a.dot");
 }
+
+#[test]
+fn graph_ext() {
+    let mut config = Config::default();
+    config.repo_path = ".".parse().unwrap();
+    // Collect the graph
+    let collector = get_collector();
+    let graph = collector.walk(config);
+
+    assert!(graph.authors().is_ok());
+    assert!(graph
+        .author_related_commits(&String::from("williamfzc <178894043@qq.com>"))
+        .is_ok());
+}

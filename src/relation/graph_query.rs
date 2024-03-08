@@ -15,7 +15,7 @@ impl RelationGraph {
         self.issue_mapping.get(name)
     }
 
-    fn find_related(
+    pub(crate) fn find_related(
         &self,
         entry: &String,
         src: &crate::relation::graph::NodeMapping,
