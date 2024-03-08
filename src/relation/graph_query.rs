@@ -1,4 +1,4 @@
-use crate::relation::graph::{GraphSize, NodeData, RelationGraph};
+use crate::relation::graph::{GraphSize, NodeData, NodeMapping, RelationGraph};
 use std::fmt::Error;
 
 /// query API
@@ -15,11 +15,22 @@ impl RelationGraph {
         self.issue_mapping.get(name)
     }
 
+    pub(crate) fn get_keys(&self, node_mapping: &NodeMapping) -> Vec<String> {
+        return node_mapping
+            .keys()
+            .map(|key| key.as_ref().clone())
+            .collect();
+    }
+
+    pub fn issues(&self) -> Vec<String> {
+        return self.get_keys(&self.issue_mapping);
+    }
+
     pub(crate) fn find_related(
         &self,
         entry: &String,
-        src: &crate::relation::graph::NodeMapping,
-        target: &crate::relation::graph::NodeMapping,
+        src: &NodeMapping,
+        target: &NodeMapping,
     ) -> Result<Vec<String>, Error> {
         if !src.contains_key(entry) {
             return Err(Error::default());

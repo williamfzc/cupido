@@ -21,7 +21,8 @@ pub fn create_router() -> Router {
             "/issue",
             Router::new()
                 .route("/-/files", get(issue_related_files_handler))
-                .route("/-/commits", get(issue_related_commits_handler)),
+                .route("/-/commits", get(issue_related_commits_handler))
+                .route("/list", get(issues)),
         )
         .nest(
             "/commit",
@@ -36,7 +37,7 @@ pub fn create_router() -> Router {
             "/author",
             Router::new()
                 .route("/-/commits", get(author_related_commits_handler))
-                .route("list", get(authors)),
+                .route("/list", get(authors)),
         )
         .nest(
             "/commit",
@@ -102,6 +103,12 @@ async fn issue_related_commits_handler(
         }
     };
 }
+
+async fn issues() -> axum::Json<Vec<String>> {
+    let conf = crate::server::app::SERVER_CONFIG.read().unwrap();
+    return axum::Json(conf.graph.issues());
+}
+
 
 async fn commit_related_files_handler(
     Query(params): Query<CommitParams>,

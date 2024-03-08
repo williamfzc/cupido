@@ -35,6 +35,13 @@ fn graph_query() {
         "Issue should be related to at least one file"
     );
 
+    // Test Issues
+    let issues = graph.issues();
+    assert!(
+        !issues.is_empty(),
+        "Issue should not be empty"
+    );
+
     // Print results for inspection
     println!("File: {}", file_name);
     println!("File-related issues: {:?}", issues);
@@ -61,7 +68,7 @@ fn graph_ext() {
     let collector = get_collector();
     let graph = collector.walk(config);
 
-    assert!(graph.authors().is_ok());
+    assert!(!graph.authors().is_empty());
     assert!(graph
         .author_related_commits(&String::from("williamfzc <178894043@qq.com>"))
         .is_ok());

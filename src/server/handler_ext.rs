@@ -36,11 +36,5 @@ pub(crate) async fn commit_related_authors_handler(
 
 pub(crate) async fn authors() -> axum::Json<Vec<String>> {
     let conf = crate::server::app::SERVER_CONFIG.read().unwrap();
-    return match conf.graph.authors() {
-        Ok(authors) => axum::Json(authors),
-        Err(error) => {
-            error!("authors error: {}", error);
-            axum::Json(Vec::new())
-        }
-    };
+    return axum::Json(conf.graph.authors());
 }

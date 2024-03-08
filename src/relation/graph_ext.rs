@@ -33,12 +33,7 @@ impl RelationGraph {
         return self.find_related(commit_name, &self.commit_mapping, &self.author_mapping);
     }
 
-    pub fn authors(&self) -> Result<Vec<String>, Error> {
-        let keys: Vec<String> = self
-            .author_mapping
-            .keys()
-            .map(|key| key.as_ref().clone())
-            .collect();
-        return Ok(keys);
+    pub fn authors(&self) -> Vec<String> {
+        return self.get_keys(&self.author_mapping);
     }
 }
