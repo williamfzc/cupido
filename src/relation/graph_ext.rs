@@ -1,4 +1,5 @@
 use crate::relation::graph::{EdgeType, NodeData, NodeType, RelationGraph};
+use std::collections::HashMap;
 use std::fmt::Error;
 
 /// extension functions
@@ -35,5 +36,39 @@ impl RelationGraph {
 
     pub fn authors(&self) -> Vec<String> {
         return self.get_keys(&self.author_mapping);
+    }
+
+    fn file_edge_counter(&self) -> HashMap<String, usize> {
+        let mut edges_count_map: HashMap<_, usize> = HashMap::new();
+        for (each_name, each) in &self.file_mapping {
+            let edges = self.g.edges(each.node_index);
+            let edge_count = edges.count();
+            edges_count_map.insert(each_name.to_string(), edge_count);
+        }
+        return edges_count_map;
+    }
+
+    pub fn file_hot_ranks(&self) -> HashMap<String, usize> {
+        // currently we directly simply use edge counts for representing heat rates
+        // commits + issues
+        let edges_count_map = self.file_edge_counter();
+        let mut sorted_edges_count: Vec<_> = edges_count_map.into_iter().collect();
+        sorted_edges_count.sort_by(|a, b| a.1.cmp(&b.1));
+
+        // same scores might have different ranks
+        let mut ranks: HashMap<String, usize> = HashMap::new();
+        for (idx, (file_name, _)) in sorted_edges_count.iter().enumerate() {
+            ranks.insert(file_name.clone(), idx + 1);
+        }
+        return ranks;
+    }
+
+    pub fn file_hot_rank(&self, file_name: &String) -> usize {
+        const DEFAULT: usize = 0;
+        if !self.file_mapping.contains_key(file_name) {
+            return DEFAULT;
+        }
+        let ranks = self.file_hot_ranks();
+        return *ranks.get(file_name).unwrap_or(&DEFAULT);
     }
 }

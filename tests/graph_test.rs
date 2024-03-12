@@ -37,10 +37,7 @@ fn graph_query() {
 
     // Test Issues
     let issues = graph.issues();
-    assert!(
-        !issues.is_empty(),
-        "Issue should not be empty"
-    );
+    assert!(!issues.is_empty(), "Issue should not be empty");
 
     // Print results for inspection
     println!("File: {}", file_name);
@@ -72,4 +69,13 @@ fn graph_ext() {
     assert!(graph
         .author_related_commits(&String::from("williamfzc <178894043@qq.com>"))
         .is_ok());
+
+    // rank
+    let readme_rank = graph.file_hot_rank(&String::from("README.md"));
+    assert!(readme_rank > 0);
+    let cargo_rank = graph.file_hot_rank(&String::from("Cargo.toml"));
+    assert!(cargo_rank > 0);
+
+    let ranks = graph.file_hot_ranks();
+    assert_eq!(ranks.len(), graph.file_size());
 }
