@@ -52,6 +52,10 @@ struct CommonOptions {
     /// Show progress
     #[clap(long)]
     progress: Option<bool>,
+
+    /// Depth Limit
+    #[clap(long)]
+    depth: Option<u32>,
 }
 
 #[derive(Parser, Debug)]
@@ -93,6 +97,9 @@ fn handle_map(map_command: MapCommand) {
     if let Some(ref multi_parents) = map_command.common_options.multi_parents {
         conf.multi_parents = multi_parents.clone()
     }
+    if let Some(ref depth) = map_command.common_options.depth {
+        conf.depth = depth.clone()
+    }
 
     info!("config: {:?}", map_command);
     let start_time = Instant::now();
@@ -131,6 +138,9 @@ fn handle_up(up_cmd: UpCommand) {
     }
     if let Some(ref progress) = up_cmd.common_options.progress {
         conf.progress = progress.clone()
+    }
+    if let Some(ref depth) = up_cmd.common_options.depth {
+        conf.depth = depth.clone()
     }
 
     info!("config: {:?}", up_cmd);

@@ -109,7 +109,6 @@ async fn issues() -> axum::Json<Vec<String>> {
     return axum::Json(conf.graph.issues());
 }
 
-
 async fn commit_related_files_handler(
     Query(params): Query<CommitParams>,
 ) -> axum::Json<Vec<String>> {

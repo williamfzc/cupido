@@ -19,7 +19,7 @@ impl CommitResult {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Config {
     pub repo_path: String,
-    pub depth: i32,
+    pub depth: u32,
     pub issue_regex: String,
     pub path_specs: Vec<String>,
     pub multi_parents: bool,
