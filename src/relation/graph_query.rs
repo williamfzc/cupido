@@ -22,6 +22,14 @@ impl RelationGraph {
             .collect();
     }
 
+    pub fn files(&self) -> Vec<String> {
+        return self.get_keys(&self.file_mapping);
+    }
+
+    pub fn commits(&self) -> Vec<String> {
+        return self.get_keys(&self.commit_mapping);
+    }
+
     pub fn issues(&self) -> Vec<String> {
         return self.get_keys(&self.issue_mapping);
     }
