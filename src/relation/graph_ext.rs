@@ -9,18 +9,20 @@ impl RelationGraph {
     }
 
     pub fn add_edge_author2commit(&mut self, author_name: &String, commit_name: &String) {
-        if let (Some(commit_data), Some(author_data)) = (
+        if let (Some(commit_index), Some(author_index)) = (
             self.commit_mapping.get(commit_name),
             self.author_mapping.get(author_name),
         ) {
-            let commit_index = commit_data.node_index;
-            let author_index = author_data.node_index;
-            self.add_edge(commit_index, author_index, EdgeType::Author2Commit);
+            self.add_edge(*commit_index, *author_index, EdgeType::Author2Commit);
         }
     }
 
     pub fn get_author_node(&self, name: &String) -> Option<&NodeData> {
-        return self.author_mapping.get(name);
+        if !self.author_mapping.contains_key(name) {
+            return None;
+        }
+        let node_index = self.author_mapping.get(name).unwrap();
+        return Some(&self.g[*node_index]);
     }
 
     pub fn author_related_commits(&self, author_name: &String) -> Result<Vec<String>, Error> {
@@ -41,7 +43,7 @@ impl RelationGraph {
     fn file_edge_counter(&self) -> HashMap<String, usize> {
         let mut edges_count_map: HashMap<_, usize> = HashMap::new();
         for (each_name, each) in &self.file_mapping {
-            let edges = self.g.edges(each.node_index);
+            let edges = self.g.edges(*each);
             let edge_count = edges.count();
             edges_count_map.insert(each_name.to_string(), edge_count);
         }

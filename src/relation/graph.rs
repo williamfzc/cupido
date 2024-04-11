@@ -5,6 +5,7 @@ use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::sync::Arc;
 
+#[derive(PartialEq, Eq)]
 pub(crate) enum NodeType {
     File(Option<FileData>),
     Commit(Option<CommitData>),
@@ -12,12 +13,16 @@ pub(crate) enum NodeType {
     Author(Option<AuthorData>),
 }
 
+#[derive(PartialEq, Eq, Debug)]
 pub(crate) struct FileData {}
 
+#[derive(PartialEq, Eq, Debug)]
 pub(crate) struct CommitData {}
 
+#[derive(PartialEq, Eq, Debug)]
 pub(crate) struct IssueData {}
 
+#[derive(PartialEq, Eq, Debug)]
 pub(crate) struct AuthorData {}
 
 #[derive(Debug)]
@@ -37,20 +42,26 @@ impl Display for EdgeType {
     }
 }
 
+#[derive(PartialEq, Eq)]
 pub struct NodeData {
-    pub(crate) _name: Arc<String>,
+    pub(crate) name: Arc<String>,
     pub(crate) _node_type: NodeType,
-    pub(crate) node_index: NodeIndex,
 }
 
-pub(crate) type NodeMapping = HashMap<Arc<String>, NodeData>;
+impl Display for NodeData {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.name)
+    }
+}
+
+pub(crate) type NodeMapping = HashMap<Arc<String>, NodeIndex>;
 
 pub struct RelationGraph {
     pub(crate) file_mapping: NodeMapping,
     pub(crate) commit_mapping: NodeMapping,
     pub(crate) issue_mapping: NodeMapping,
     pub(crate) author_mapping: NodeMapping,
-    pub(crate) g: UnGraph<Arc<String>, EdgeType>,
+    pub(crate) g: UnGraph<NodeData, EdgeType>,
     pub(crate) conf: CollectorConfig,
 }
 

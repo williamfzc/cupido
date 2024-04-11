@@ -4,15 +4,27 @@ use std::fmt::Error;
 /// query API
 impl RelationGraph {
     pub fn get_file_node(&self, name: &String) -> Option<&NodeData> {
-        self.file_mapping.get(name)
+        if !self.file_mapping.contains_key(name) {
+            return None;
+        }
+        let node_index = self.file_mapping.get(name).unwrap();
+        return Some(&self.g[*node_index]);
     }
 
     pub fn get_commit_node(&self, name: &String) -> Option<&NodeData> {
-        self.commit_mapping.get(name)
+        if !self.commit_mapping.contains_key(name) {
+            return None;
+        }
+        let node_index = self.commit_mapping.get(name).unwrap();
+        return Some(&self.g[*node_index]);
     }
 
     pub fn get_issue_node(&self, name: &String) -> Option<&NodeData> {
-        self.issue_mapping.get(name)
+        if !self.issue_mapping.contains_key(name) {
+            return None;
+        }
+        let node_index = self.issue_mapping.get(name).unwrap();
+        return Some(&self.g[*node_index]);
     }
 
     pub(crate) fn get_keys(&self, node_mapping: &NodeMapping) -> Vec<String> {
@@ -43,16 +55,16 @@ impl RelationGraph {
         if !src.contains_key(entry) {
             return Err(Error::default());
         }
-        let neighbors = self.g.neighbors(src[entry].node_index);
-        let related: Vec<String> = neighbors
+        let related: Vec<String> = self
+            .g
+            .neighbors(src[entry])
             .filter(|node_index| {
-                let data = self.g[*node_index].to_string();
-                if !target.contains_key(&data) {
-                    return false;
-                }
-                return true;
+                let data = &self.g[*node_index];
+                return target.contains_key(&data.name);
             })
-            .map(|node_index| self.g[node_index].to_string())
+            .map(|node_index| {
+                return self.g[node_index].name.to_string().clone();
+            })
             .collect();
 
         Ok(related)

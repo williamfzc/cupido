@@ -10,7 +10,7 @@ impl RelationGraph {
             commit_mapping: NodeMapping::new(),
             issue_mapping: NodeMapping::new(),
             author_mapping: NodeMapping::new(),
-            g: UnGraph::<Arc<String>, EdgeType>::new_undirected(),
+            g: UnGraph::<NodeData, EdgeType>::new_undirected(),
             conf: crate::collector::config::Config::default(),
         };
     }
@@ -25,13 +25,12 @@ impl RelationGraph {
 
         if !mapping.contains_key(name) {
             let name_rc: Arc<String> = Arc::from(name.to_string());
-            let node_index = self.g.add_node(name_rc.clone());
             let node_data = NodeData {
-                _name: name_rc.clone(),
+                name: name_rc.clone(),
                 _node_type: node_type,
-                node_index,
             };
-            mapping.insert(name_rc, node_data);
+            let node_index = self.g.add_node(node_data);
+            mapping.insert(name_rc, node_index);
         }
     }
 
@@ -60,35 +59,29 @@ impl RelationGraph {
     }
 
     pub fn add_edge_file2commit(&mut self, file_name: &String, commit_name: &String) {
-        if let (Some(file_data), Some(commit_data)) = (
+        if let (Some(file_index), Some(commit_index)) = (
             self.file_mapping.get(file_name),
             self.commit_mapping.get(commit_name),
         ) {
-            let file_index = file_data.node_index;
-            let commit_index = commit_data.node_index;
-            self.add_edge(file_index, commit_index, EdgeType::File2Commit);
+            self.add_edge(*file_index, *commit_index, EdgeType::File2Commit);
         }
     }
 
     pub fn add_edge_file2issue(&mut self, file_name: &String, issue: &String) {
-        if let (Some(file_data), Some(issue_data)) = (
+        if let (Some(file_index), Some(issue_index)) = (
             self.file_mapping.get(file_name),
             self.issue_mapping.get(issue),
         ) {
-            let file_index = file_data.node_index;
-            let issue_index = issue_data.node_index;
-            self.add_edge(file_index, issue_index, EdgeType::File2Issue);
+            self.add_edge(*file_index, *issue_index, EdgeType::File2Issue);
         }
     }
 
     pub fn add_edge_commit2issue(&mut self, commit_name: &String, issue: &String) {
-        if let (Some(commit_data), Some(issue_data)) = (
+        if let (Some(commit_index), Some(issue_index)) = (
             self.commit_mapping.get(commit_name),
             self.issue_mapping.get(issue),
         ) {
-            let commit_index = commit_data.node_index;
-            let issue_index = issue_data.node_index;
-            self.add_edge(commit_index, issue_index, EdgeType::Commit2Issue);
+            self.add_edge(*commit_index, *issue_index, EdgeType::Commit2Issue);
         }
     }
 }
