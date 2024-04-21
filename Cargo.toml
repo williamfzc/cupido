@@ -4,6 +4,7 @@ version = "0.3.4"
 edition = "2021"
 description = "Explore your codebase with graph view."
 license = "Apache-2.0"
+homepage = "https://github.com/williamfzc/cupido"
 
 [dependencies]
 git2 = "0.18.1"
