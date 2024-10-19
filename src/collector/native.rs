@@ -44,6 +44,10 @@ fn walk_dfs(conf: Config, repo: &Repository) -> RelationGraph {
     graph.conf = conf.clone();
 
     let issue_regex: Regex = Regex::new(&*conf.issue_regex).unwrap();
+    let author_exclude_regex: Option<Regex> = conf.author_exclude_regex
+        .as_ref()
+        .map(|pattern| Regex::new(pattern).unwrap());
+
     let pb = create_progress(conf.depth as u64);
 
     for id in revwalk {
@@ -62,6 +66,16 @@ fn walk_dfs(conf: Config, repo: &Repository) -> RelationGraph {
                 continue;
             }
         };
+
+        // check author first
+        let author_str = &commit.author().to_string();
+        if author_exclude_regex.is_some() {
+            if let Some(regex) = &author_exclude_regex {
+                if regex.is_match(author_str) {
+                    continue;
+                }
+            }
+        }
 
         let commit_result = process_commit(&repo, &commit, &issue_regex, &conf);
 
@@ -92,7 +106,6 @@ fn walk_dfs(conf: Config, repo: &Repository) -> RelationGraph {
         }
 
         // author
-        let author_str = &commit.author().to_string();
         graph.add_author_node(author_str);
         graph.add_edge_author2commit(author_str, commit_id_str);
 
@@ -166,7 +179,7 @@ fn process_commit(repo: &Repository, commit: &Commit, re: &Regex, conf: &Config)
             issues,
         };
     }
-    return CommitResult::default();
+    CommitResult::default()
 }
 
 fn absolute_path(path: &str) -> String {
