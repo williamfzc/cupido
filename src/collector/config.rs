@@ -24,6 +24,7 @@ pub struct Config {
     pub path_specs: Vec<String>,
     pub multi_parents: bool,
     pub progress: bool,
+    pub commit_exclude_regex: Option<String>,
     pub author_exclude_regex: Option<String>,
     // todo: node types should be optional
 }
@@ -37,6 +38,7 @@ impl Clone for Config {
             path_specs: self.path_specs.clone(),
             multi_parents: self.multi_parents,
             progress: self.progress,
+            commit_exclude_regex: self.commit_exclude_regex.clone(),
             author_exclude_regex: self.author_exclude_regex.clone(),
         }
     }
@@ -51,6 +53,7 @@ impl Config {
             path_specs: Vec::default(),
             multi_parents: false,
             progress: false,
+            commit_exclude_regex: None,
             author_exclude_regex: None,
         }
     }

@@ -44,6 +44,7 @@ fn walk_dfs(conf: Config, repo: &Repository) -> RelationGraph {
     graph.conf = conf.clone();
 
     let issue_regex: Regex = Regex::new(&*conf.issue_regex).unwrap();
+    let commit_exclude_regex: Option<Regex> = conf.commit_exclude_regex.as_ref().map(|pattern| Regex::new(pattern).unwrap());
     let author_exclude_regex: Option<Regex> = conf.author_exclude_regex
         .as_ref()
         .map(|pattern| Regex::new(pattern).unwrap());
@@ -66,6 +67,15 @@ fn walk_dfs(conf: Config, repo: &Repository) -> RelationGraph {
                 continue;
             }
         };
+
+        // msg check
+        if commit_exclude_regex.is_some() {
+            if let Some(exclude_regex) = &commit_exclude_regex {
+                if exclude_regex.is_match(commit.message().unwrap_or_default()) {
+                    continue;
+                }
+            }
+        }
 
         // check author first
         let author_str = &commit.author().to_string();
